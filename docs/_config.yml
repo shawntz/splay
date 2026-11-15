@@ -1,12 +1,12 @@
 title: Splay
-description: A tiling window manager for macOS that lays each Space out as a row of columns you scroll through, built on Dinky. System Integrity Protection stays on.
+description: A scrolling tiling window manager for macOS. Each Space is one row of columns you walk with Cmd-Left and Cmd-Right. System Integrity Protection stays on.
 # A project site. Every link and asset goes through relative_url or absolute_url,
 # so emptying baseurl serves the same site from the root of a domain.
 url: https://shawntz.github.io
 baseurl: /splay
 repository_url: https://github.com/shawntz/splay
-# One sentence on the landing page. Keep it in step with "Status" in start.md.
-status: Early. There are no releases, so you build it from source. Unit-tested on macOS 27, and so far run on one Mac.
+# The latest release. scripts/release.sh sets it.
+version: "0.0"
 # No theme: the layouts and stylesheet are this folder's own.
 theme: null
 markdown: kramdown

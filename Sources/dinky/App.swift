@@ -212,6 +212,12 @@ final class DinkyApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
             menu.addItem(item("Restore \(recoverable) windows from the previous session", "recover"))
         }
         menu.addItem(.separator())
+        // Only a bundle with a feed can update; a bare debug binary has neither.
+        if Bundle.main.infoDictionary?["SUFeedURL"] != nil {
+            let updates = NSMenuItem(title: "Check for Updates…", action: #selector(checkForUpdates(_:)), keyEquivalent: "")
+            updates.target = self
+            menu.addItem(updates)
+        }
         menu.addItem(NSMenuItem(title: "Quit \(Brand.displayName)", action: #selector(NSApplication.terminate(_:)), keyEquivalent: ""))
     }
 

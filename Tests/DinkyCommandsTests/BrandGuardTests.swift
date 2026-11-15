@@ -52,14 +52,19 @@ struct BrandGuardTests {
     }
 
     /// macOS shows these to people: the name in Activity Monitor and the Accessibility list, and any usage
-    /// string in a permission prompt. No update feed either, which is all that keeps the bundled Sparkle asleep.
-    @Test func `The app's Info.plist is Splay's and names no update feed`() throws {
+    /// string in a permission prompt. The update feed and its signing key must be Splay's own too: with
+    /// upstream's, Sparkle would offer Dinky's releases as updates.
+    @Test func `The app's Info.plist is Splay's, and so is its update feed`() throws {
         let data = try Data(contentsOf: Self.root.appending(path: "Resources/Info.plist"))
         let plist = try #require(try PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any])
         #expect(plist["CFBundleIdentifier"] as? String == Brand.bundleID)
         #expect(plist["CFBundleExecutable"] as? String == Brand.name)
         #expect(plist["CFBundleName"] as? String == Brand.displayName)
-        #expect(plist.keys.filter { $0.hasPrefix("SU") } == [], "a Sparkle key, such as SUFeedURL, starts the updater")
+        #expect(plist["SUFeedURL"] as? String == "https://github.com/shawntz/splay/releases/latest/download/appcast.xml")
+        let key = try #require(plist["SUPublicEDKey"] as? String)
+        #expect(Data(base64Encoded: key)?.count == 32, "an Ed25519 public key is 32 bytes")
+        #expect(key != "jif/E57Xw8xCo7BwHnOeASD+nbQc462aQTYOuvoH/io=", "that is upstream's key")
+        #expect(Set(plist.keys.filter { $0.hasPrefix("SU") }) == ["SUFeedURL", "SUPublicEDKey"])
         func strings(_ value: Any) -> [String] {
             switch value {
             case let text as String: [text]

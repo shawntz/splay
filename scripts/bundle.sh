@@ -35,8 +35,9 @@ swift build "${BUILD_FLAGS[@]}"
 # the app that was there working, and with it the Accessibility grant, login item and command line link that
 # point at it. The app that was there waits in the staging folder while the new one moves in, and goes back if
 # that move never happens.
-OUT=build/Splay.app
-STAGE=build/.staging
+# OUT can point elsewhere, as release packaging does, so a copy running from build/ is left alone.
+OUT="${OUT:-build/Splay.app}"
+STAGE="$(dirname "$OUT")/.staging"
 APP="$STAGE/Splay.app"
 ICON_OUT="$(mktemp -d)"
 trap '[[ -e "$OUT" || ! -e "$STAGE/previous.app" ]] || mv "$STAGE/previous.app" "$OUT"; rm -rf "$STAGE" "$ICON_OUT"' EXIT
@@ -57,7 +58,6 @@ plutil -replace CFBundleIconFile -string Splay "$APP/Contents/Info.plist"
 plutil -replace CFBundleIconName -string Splay "$APP/Contents/Info.plist"
 
 # Sparkle.framework from the resolved SwiftPM artifact; the linker rpath finds it here.
-# The binary still links it, but Info.plist has no feed, so it never checks for updates.
 SPARKLE_SRC="$(find .build/artifacts -maxdepth 6 -path '*macos-arm64_x86_64/Sparkle.framework' | head -1)"
 [[ -n "$SPARKLE_SRC" ]] || { echo 'Sparkle.framework not found in .build/artifacts' >&2; exit 1; }
 mkdir -p "$APP/Contents/Frameworks"

@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Changelog
-description: Splay has no releases yet. What it changes from Dinky so far.
+description: What changed in each release of Splay.
 permalink: /changelog/
 ---
 
@@ -10,9 +10,8 @@ https://shawntz.github.io/splay/changelog/.</p>
 
 # Changelog
 
-Splay has no releases yet. It is built from source, and its history is the
-git log. `CHANGELOG.md` in the source is upstream Dinky's, merged in as it
-stands: it lists Dinky's releases, not Splay's.
+Splay's releases. `CHANGELOG.md` in the source is upstream Dinky's, merged in
+as it stands, and lists Dinky's releases.
 
 ## Unreleased
 
@@ -48,5 +47,5 @@ What Splay changes from the Dinky it merges:
   `~/Library/Logs/splay.log`, `~/Library/Application Support/splay`,
   `SPLAY_` hook variables and the bundle ID `com.shawnschwartz.splay`.
 - A running Dinky counts as another tiling window manager.
-- No updater, download or Homebrew cask: Splay is built with
-  `scripts/bundle.sh`.
+- Releases are universal, signed with Developer ID and notarized. Splay
+  updates itself from its own feed, with Check for Updates in the menu.

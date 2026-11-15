@@ -32,9 +32,7 @@ It is not a compositor. macOS still draws every window. Windows glide to their
 tiles by being moved there, frame by frame, and a column scrolled out of view
 hangs off the display edge, since nothing can clip it.
 
-Status: an early personal fork, built from source. There are no releases. So
-far it has been built and unit-tested on macOS 27, and run on one Mac, its
-author's.
+Status: new. Splay is built for macOS 15 or later and developed on macOS 27.
 
 > **Private APIs.** macOS has no public way to switch Spaces quickly or move a
 > window between them, so Splay, like Dinky, uses a synthetic Dock swipe and a
@@ -56,10 +54,9 @@ author's.
 
 ## Build from source
 
-There is no download, Homebrew cask or updater. You build Splay from a
-checkout of its source. To update, quit Splay, build again and open it. A
-rebuild alone leaves the old one running, and `open` only brings that one
-forward.
+You build Splay from a checkout of its source. To update, quit Splay, build
+again and open it. A rebuild alone leaves the old one running, and `open` only
+brings that one forward.
 
 ```sh
 scripts/bundle.sh                # build/Splay.app, a release build for this Mac

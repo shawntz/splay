@@ -22,5 +22,9 @@
 	<true/>
 	<key>NSHighResolutionCapable</key>
 	<true/>
+	<key>SUFeedURL</key>
+	<string>https://github.com/shawntz/splay/releases/latest/download/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>9iCoUgKCEDbczsf5yQxq3/LzsDmHAv6xbKHzxXWw2wQ=</string>
 </dict>
 </plist>

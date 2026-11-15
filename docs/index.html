@@ -1,7 +1,7 @@
 ---
 layout: landing
 title: A scrolling tiling window manager for macOS
-description: Splay lays each macOS Space out as a row of columns that Cmd-Left and Cmd-Right scroll through. A fork of Dinky by Mikkel Malmberg, built from source, with System Integrity Protection left on.
+description: Splay lays each macOS Space out as one row of columns that Cmd-Left and Cmd-Right scroll through. System Integrity Protection stays on.
 permalink: /
 ---
 
@@ -10,24 +10,23 @@ permalink: /
     <img class="hero-icon" src="{{ '/assets/icon.png' | relative_url }}" alt="" width="112" height="112">
     <h1 id="hero-title">Splay</h1>
     <p class="lede">
-      A tiling window manager for macOS. Each Space is one row of columns that runs past the edges of
-      the display, and <kbd>Cmd-Left</kbd> and <kbd>Cmd-Right</kbd> scroll along it.
+      A scrolling tiling window manager for macOS. Each Space is one row of columns that runs past
+      the edges of the display, and <kbd>Cmd-Left</kbd> and <kbd>Cmd-Right</kbd> walk it.
     </p>
     <p class="built-on">
-      Splay is a fork of <a href="https://github.com/mikker/Dinky">Dinky</a> by Mikkel Malmberg.
-      It makes Dinky's scrolling layout the default and adds column commands modelled on niri.
-      System Integrity Protection stays on.
+      The niri and PaperWM idea on a Mac, with System Integrity Protection left on. A fork of
+      <a href="https://github.com/mikker/Dinky">Dinky</a>, built around the strip.
     </p>
     <p class="actions">
       <a class="button button-primary" href="{{ '/start/#build-from-source' | relative_url }}">Get started</a>
       <a class="button" href="{{ site.repository_url }}">GitHub</a>
     </p>
-    <p class="status"><span class="status-dot" aria-hidden="true"></span>{{ site.status }}</p>
+    <p class="status"><span class="status-dot" aria-hidden="true"></span>For macOS 15 or later. Build it from source with Xcode 26 or later.</p>
   </div>
   <div class="wrap wrap-wide">
     {% include demo.html name="strip" class="demo-hero"
       label="One workspace with five windows. A new window opens as a column to the right of the focused one. Cmd-Right and Cmd-Left move focus one column and the strip scrolls to show it. Cmd-End and Cmd-Home jump to the last and first column."
-      caption="One workspace, five windows. A new window opens right of the focused column and nothing else resizes. Cmd-Right and Cmd-Left move one column, Cmd-End and Cmd-Home jump to the ends." %}
+      caption="A new window opens beside the focused column and nothing else resizes. Cmd-Right and Cmd-Left step one column, Cmd-End and Cmd-Home jump to the ends." %}
   </div>
 </section>
 
@@ -37,21 +36,20 @@ permalink: /
       <div class="feature-text">
         <h2>A row of columns on every Space</h2>
         <p>
-          A new window opens as a column to the right of the focused one, 0.49 of the display wide,
-          and the other columns keep their widths. Moving focus scrolls the row just far enough to
-          show the focused column whole. Columns out of view hang off the edge with 25 points
-          showing, because macOS can't clip another app's window.
+          A new window opens as a column beside the focused one, and the others keep their widths.
+          Moving focus scrolls the row just far enough to show the focused column whole. Columns out
+          of view leave a sliver at the edge, so you can see what is there.
         </p>
         <dl class="keylist">
           <div><dt><kbd>Cmd-Left</kbd> <kbd>Cmd-Right</kbd></dt><dd>Focus the column to the left or right</dd></div>
           <div><dt><kbd>Cmd-Home</kbd> <kbd>Cmd-End</kbd></dt><dd>Focus the first or last column</dd></div>
-          <div><dt><kbd>Alt-J</kbd> <kbd>Alt-K</kbd></dt><dd>Focus the window below or above in a column</dd></div>
-          <div><dt><kbd>Alt-Shift-H</kbd> <kbd>Alt-Shift-L</kbd></dt><dd>Swap the column with its neighbour</dd></div>
+          <div><dt><kbd>Alt-J</kbd> <kbd>Alt-K</kbd></dt><dd>Focus down or up within a column</dd></div>
+          <div><dt><kbd>Alt-Shift-H</kbd> <kbd>Alt-Shift-L</kbd></dt><dd>Move the column left or right</dd></div>
         </dl>
       </div>
       <figure class="feature-media diagram">
         {% include figures/scrolling.svg %}
-        <figcaption>Columns 2 and 3 in view. Columns 1 and 4 are parked off the edges with a sliver showing.</figcaption>
+        <figcaption>Columns 2 and 3 in view. Columns 1 and 4 wait off the edges with a sliver showing.</figcaption>
       </figure>
     </article>
 
@@ -59,33 +57,30 @@ permalink: /
       <div class="feature-text">
         <h2>Column widths from the keyboard</h2>
         <p>
-          <kbd>Alt-R</kbd> steps the focused column through a third, a half and two thirds of the
-          display, and <kbd>Alt-Shift-R</kbd> steps back. <kbd>Alt-M</kbd> widens it to the whole
-          display, and a second press gives it back its width. <kbd>Alt-C</kbd> centres it and keeps
-          it centred while you work in it.
+          <kbd>Alt-R</kbd> cycles the focused column through a third, a half and two thirds of the
+          display. <kbd>Alt-M</kbd> maximizes it and a second press restores it. <kbd>Alt-C</kbd>
+          centres it.
         </p>
         <p>
-          <code>splay column-width 0.75</code> sets an exact share from a script, and
-          <code>run = 'column-width 0.66'</code> in a window rule opens an app's windows at two thirds.
+          <code>splay column-width 0.75</code> sets any share from a script, and
+          <code>run = 'column-width 0.66'</code> in a window rule opens an app at two thirds.
         </p>
       </div>
       {% include demo.html name="widths" class="feature-media"
         label="Alt-R steps the focused column through a third, a half and two thirds of the screen. Alt-Shift-R steps back. Alt-M maximizes the column and Alt-M again restores its width. Alt-C centres it."
-        caption="Alt-R and Alt-Shift-R step through the preset widths, Alt-M maximizes and restores, Alt-C centres." %}
+        caption="Alt-R cycles the preset widths, Alt-M maximizes and restores, Alt-C centres." %}
     </article>
 
     <article class="feature">
       <div class="feature-text">
         <h2>Focus lands where you left it</h2>
         <p>
-          Moving into a column lands on the window you last used there, as in niri. When another
-          column closes or changes width, the focused column stays where it is on screen. Windows
-          already open when Splay starts go into the strip left to right, as they stand.
+          Go back to a column and you land on the window you last used there. When another column
+          closes or resizes, the one you are looking at stays put.
         </p>
         <p>
-          For half a second after Splay focuses a window, or until macOS reports it in front,
-          commands start from that window, so quick presses of <kbd>Cmd-Right</kbd> step one column
-          each.
+          Fast presses keep up. Each <kbd>Cmd-Right</kbd> steps one column, without waiting for macOS
+          to catch up with the last.
         </p>
       </div>
       <figure class="feature-media config">
@@ -95,7 +90,7 @@ column-width = 0.49
 center-focused-column = 'never'  <span class="c"># or always, on-overflow</span>
 preset-column-widths = [0.33333, 0.5, 0.66667]
 peek = 25                        <span class="c"># points left on screen</span></code></pre>
-        <figcaption><code>center-focused-column = 'always'</code> centres each column as focus reaches it, as niri's option of that name does.</figcaption>
+        <figcaption>The config is one TOML file, applied when you save it.</figcaption>
       </figure>
     </article>
 
@@ -105,16 +100,16 @@ peek = 25                        <span class="c"># points left on screen</span><
         <p>
           <kbd>Ctrl-Left</kbd> and <kbd>Ctrl-Right</kbd> switch workspace, <kbd>Alt-1</kbd> to
           <kbd>Alt-9</kbd> go to one, and <kbd>Alt-Shift-2</kbd> sends the focused window to
-          workspace 2. Each workspace is a macOS Space with a strip of its own.
+          workspace 2. Each workspace is a macOS Space with a strip of its own, and switching skips
+          the slide animation.
         </p>
         <p>
-          This part is Dinky's. It switches Spaces with a synthetic Dock swipe and a few private
-          SkyLight calls, so a macOS update can break it.
+          Any workspace can use another layout instead: dwindle, master, a fixed grid or an accordion.
         </p>
       </div>
       {% include demo.html name="workspaces" class="feature-media"
         label="Ctrl-Right and Ctrl-Left switch between workspaces, each a native macOS Space with its own strip. Alt-Shift-2 sends the focused window to workspace 2."
-        caption="Ctrl-Right and Ctrl-Left switch workspace, and Alt-Shift-2 sends a window to workspace 2. This part is inherited from Dinky unchanged." %}
+        caption="Ctrl-Right and Ctrl-Left switch workspace, and Alt-Shift-2 sends a window to workspace 2." %}
     </article>
   </div>
 </section>
@@ -124,65 +119,39 @@ peek = 25                        <span class="c"># points left on screen</span><
     <h2 id="compare-title">Splay and Dinky</h2>
     <div class="compare-intro">
       <p>
-        <a href="https://github.com/mikker/Dinky">Dinky</a> is a tiling window manager for macOS by
-        Mikkel Malmberg that leaves System Integrity Protection on. Splay is a fork of it, and almost
-        all of Splay's code is Dinky's, including the scrolling layout, which Dinky added in version
-        0.16. Splay changes what you get on the first run and adds commands for the strip.
+        Splay is a fork of <a href="https://github.com/mikker/Dinky">Dinky</a> by Mikkel Malmberg,
+        and it keeps merging Dinky's changes. Dinky tiles in a dwindle layout by default and offers
+        a scrolling strip as an option. Splay is built around the strip.
       </p>
     </div>
 
     {% include demo.html name="versus" class="demo-wide"
       label="The same five windows opened one after another under two defaults, side by side. On the left, Dinky's default, tiles, splits the space again for each new window. On the right, Splay's default, the strip, gives each window its own width and the strip grows."
-      caption="The same five windows under each default. Left, Dinky's default (tiles) splits the space again for each window. Right, Splay's default (strip) keeps each width and grows the strip. Both layouts ship in both apps." %}
+      caption="The same five windows under each default. Dinky's tiles split the space again for each window. Splay's strip keeps every width and grows sideways." %}
 
-    <div class="cards">
-      <div class="card">
-        <h3>What Splay adds</h3>
-        <ul>
-          <li>The scrolling layout is the default. <code>default-layout = 'tiles'</code> brings back Dinky's.</li>
-          <li><kbd>Cmd-Left</kbd> and <kbd>Cmd-Right</kbd> move between columns, <kbd>Cmd-Home</kbd> and <kbd>Cmd-End</kbd> jump to the ends.</li>
-          <li><code>column-width</code> with preset steps or an exact share, <code>maximize-column</code> that remembers the old width, <code>center-column</code> and <code>focus-column</code>. They have keys and menu items, and work from the command line and in window rules.</li>
-          <li><code>[scrolling]</code> settings for <code>center-focused-column</code>, <code>preset-column-widths</code> and <code>peek</code>.</li>
-          <li>Focus into a column lands on its last used window, and the focused column holds its place when others close or resize.</li>
-          <li>No login item unless you set <code>start-at-login = true</code>.</li>
-          <li>Its own command, config, log and bundle ID, so it can be installed beside Dinky.</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3>What Dinky has that Splay doesn't</h3>
-        <ul>
-          <li>30 tagged releases, from v0.1.0 to v0.28, each with a changelog entry.</li>
-          <li>A download and a Homebrew cask.</li>
-          <li>Updates through Sparkle, from its menu.</li>
-          <li>Builds signed with Developer ID and notarized, for Apple silicon and Intel.</li>
-          <li>Use in practice. Its manual says its author uses it daily on macOS 27.</li>
-          <li>Continuous integration, and a fuzzer that drives the running app in a virtual machine and checks the layouts.</li>
-          <li>Fixes land there first. Splay gets them only when they are merged by hand.</li>
-          <li><kbd>Cmd-Left</kbd>, <kbd>Cmd-Right</kbd>, <kbd>Cmd-Home</kbd>, <kbd>Cmd-End</kbd> and Option-R, C and M stay with your apps, and <kbd>Alt-H</kbd> and <kbd>Alt-L</kbd> focus left and right.</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3>What Splay costs</h3>
-        <ul>
-          <li><kbd>Cmd-Left</kbd> and <kbd>Cmd-Right</kbd> never reach apps while Splay runs. Text fields lose line start and end, where <kbd>Ctrl-A</kbd> and <kbd>Ctrl-E</kbd> still work, and browsers lose Back and Forward, where <kbd>Cmd-[</kbd> and <kbd>Cmd-]</kbd> still work. <code>exclude-apps</code> gives the keys back to the apps you list.</li>
-          <li>The defaults take Option-R, Option-Shift-R, Option-C and Option-M, which type ®, ‰, ç and µ on a US layout.</li>
-          <li>You build it yourself with Xcode 26 or later. Without an Apple Development certificate it signs ad hoc, and each rebuild loses the Accessibility grant.</li>
-          <li>It has been unit-tested on macOS 27 only, and so far has run on one Mac.</li>
-        </ul>
-      </div>
+    <div class="table-scroll">
+      <table class="keytable">
+        <thead>
+          <tr><th scope="col"></th><th scope="col">Dinky</th><th scope="col">Splay</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Default layout</td><td>Dwindle tiles</td><td>Scrolling strip</td></tr>
+          <tr><td>Move between columns</td><td><kbd>Alt-H</kbd> <kbd>Alt-L</kbd></td><td><kbd>Cmd-Left</kbd> <kbd>Cmd-Right</kbd></td></tr>
+          <tr><td>Jump to the first or last column</td><td>No</td><td><kbd>Cmd-Home</kbd> <kbd>Cmd-End</kbd></td></tr>
+          <tr><td>Preset column widths</td><td>No</td><td><kbd>Alt-R</kbd> cycles a list you set</td></tr>
+          <tr><td>Set an exact width</td><td>No</td><td><code>column-width 0.75</code></td></tr>
+          <tr><td>Maximize a column</td><td>Fullscreen, until focus moves</td><td>Holds until you toggle it back</td></tr>
+          <tr><td>Centre a column on demand</td><td>No</td><td><kbd>Alt-C</kbd>, or always, or on overflow</td></tr>
+          <tr><td>Going back to a column</td><td>Nearest window</td><td>The window you last used</td></tr>
+          <tr><td>Sliver left by off-screen columns</td><td>25 points</td><td>1 to 100 points</td></tr>
+        </tbody>
+      </table>
     </div>
 
     <div class="compare-notes">
       <p>
-        Kept from Dinky as they are: the dwindle, fixed and master layouts, workspaces as native
-        Spaces, window rules, the <code>splay</code> command line and socket with AeroSpace-style
-        queries, hooks for bars such as SketchyBar, focus borders, drag and drop, <code>splay doctor</code>,
-        and putting every window back when you quit. 551 of Splay's 696 unit tests are Dinky's.
-      </p>
-      <p>
-        For the strip in a signed app that updates itself, install Dinky and set
-        <code>default-layout = 'scrolling'</code> in its config. Run one of the two at a time. Splay
-        warns while Dinky is running.
+        Dinky's other layouts, workspaces, rules, hooks and command line are all in Splay. The two
+        install side by side with separate configs. Run one at a time.
       </p>
     </div>
   </div>
@@ -192,54 +161,52 @@ peek = 25                        <span class="c"># points left on screen</span><
   <div class="wrap">
     <h2 id="keys-title">Default keys</h2>
     <p class="section-lede">
-      Every binding is spelled out in <code>~/.config/splay/splay.toml</code>, and a bound key never
-      reaches the app in front. Alt is the Option key. The keys marked Splay are new in this fork.
+      Every binding is in <code>~/.config/splay/splay.toml</code>. Alt is the Option key.
     </p>
     <div class="table-scroll">
       <table class="keytable">
         <thead>
-          <tr><th scope="col">Keys</th><th scope="col">Does</th><th scope="col">From</th></tr>
+          <tr><th scope="col">Keys</th><th scope="col">Does</th></tr>
         </thead>
         <tbody>
-          <tr class="ours"><td><kbd>Cmd-Left</kbd> <kbd>Cmd-Right</kbd></td><td>Focus the column to the left or right, at the window last focused in it.</td><td><span class="tag tag-ours">Splay</span></td></tr>
-          <tr class="ours"><td><kbd>Cmd-Home</kbd> <kbd>Cmd-End</kbd></td><td>Focus the first or last column. <kbd>Cmd-Fn-Left</kbd> and <kbd>Cmd-Fn-Right</kbd> on a laptop.</td><td><span class="tag tag-ours">Splay</span></td></tr>
-          <tr><td><kbd>Alt-J</kbd> <kbd>Alt-K</kbd></td><td>Focus the window below or above in the same column.</td><td><span class="tag">Dinky</span></td></tr>
-          <tr><td><kbd>Alt-Shift-H</kbd> <kbd>Alt-Shift-L</kbd></td><td>Swap the column with its neighbour, or take a window out of a shared column.</td><td><span class="tag">Dinky</span></td></tr>
-          <tr><td><kbd>Alt-Shift-J</kbd> <kbd>Alt-Shift-K</kbd></td><td>Move the window down or up within its column.</td><td><span class="tag">Dinky</span></td></tr>
-          <tr class="ours"><td><kbd>Alt-R</kbd> <kbd>Alt-Shift-R</kbd></td><td>Next wider or narrower preset width: a third, a half or two thirds.</td><td><span class="tag tag-ours">Splay</span></td></tr>
-          <tr class="ours"><td><kbd>Alt-C</kbd></td><td>Centre the column and keep it centred while focus stays in it.</td><td><span class="tag tag-ours">Splay</span></td></tr>
-          <tr class="ours"><td><kbd>Alt-M</kbd></td><td>Widen the column to the whole display. Press again to give it back its width.</td><td><span class="tag tag-ours">Splay</span></td></tr>
-          <tr><td><kbd>Alt-Minus</kbd> <kbd>Alt-Equal</kbd></td><td>Make the column 50 points narrower or wider.</td><td><span class="tag">Dinky</span></td></tr>
-          <tr><td><kbd>Alt-F</kbd></td><td>Toggle the window filling the workspace. Focusing another window ends it.</td><td><span class="tag">Dinky</span></td></tr>
-          <tr><td><kbd>Alt-Shift-F</kbd></td><td>Float the window, or tile it again.</td><td><span class="tag">Dinky</span></td></tr>
-          <tr><td><kbd>Alt-Comma</kbd> <kbd>Alt-Slash</kbd></td><td>Show the column as an accordion or as tiles.</td><td><span class="tag">Dinky</span></td></tr>
-          <tr><td><kbd>Ctrl-Left</kbd> <kbd>Ctrl-Right</kbd></td><td>Previous or next workspace on the focused display.</td><td><span class="tag">Dinky</span></td></tr>
-          <tr><td><kbd>Alt-1</kbd> to <kbd>Alt-9</kbd></td><td>Go to a workspace. There are 5 unless <code>workspaces</code> says otherwise.</td><td><span class="tag">Dinky</span></td></tr>
-          <tr><td><kbd>Alt-Shift-1</kbd> to <kbd>Alt-Shift-9</kbd></td><td>Move the window to a workspace, keeping focus where it is.</td><td><span class="tag">Dinky</span></td></tr>
-          <tr><td><kbd>Alt-Tab</kbd></td><td>Back to the workspace shown before.</td><td><span class="tag">Dinky</span></td></tr>
-          <tr><td><kbd>Alt-Shift-N</kbd></td><td>Move the window to the next display.</td><td><span class="tag">Dinky</span></td></tr>
-          <tr><td><kbd>Alt-Shift-Semicolon</kbd></td><td>Service mode. <kbd>Esc</kbd> reloads the config and <kbd>R</kbd> flattens the workspace.</td><td><span class="tag">Dinky</span></td></tr>
+          <tr><td><kbd>Cmd-Left</kbd> <kbd>Cmd-Right</kbd></td><td>Focus the column to the left or right.</td></tr>
+          <tr><td><kbd>Cmd-Home</kbd> <kbd>Cmd-End</kbd></td><td>Focus the first or last column. <kbd>Cmd-Fn-Left</kbd> and <kbd>Cmd-Fn-Right</kbd> on a laptop.</td></tr>
+          <tr><td><kbd>Alt-J</kbd> <kbd>Alt-K</kbd></td><td>Focus the window below or above in the same column.</td></tr>
+          <tr><td><kbd>Alt-Shift-H</kbd> <kbd>Alt-Shift-L</kbd></td><td>Move the column left or right, or take a window out of a shared column.</td></tr>
+          <tr><td><kbd>Alt-Shift-J</kbd> <kbd>Alt-Shift-K</kbd></td><td>Move the window down or up within its column.</td></tr>
+          <tr><td><kbd>Alt-R</kbd> <kbd>Alt-Shift-R</kbd></td><td>Next or previous preset width.</td></tr>
+          <tr><td><kbd>Alt-M</kbd></td><td>Maximize the column. Press again to restore it.</td></tr>
+          <tr><td><kbd>Alt-C</kbd></td><td>Centre the column.</td></tr>
+          <tr><td><kbd>Alt-Minus</kbd> <kbd>Alt-Equal</kbd></td><td>Make the column 50 points narrower or wider.</td></tr>
+          <tr><td><kbd>Alt-F</kbd></td><td>Fill the workspace with the window.</td></tr>
+          <tr><td><kbd>Alt-Shift-F</kbd></td><td>Float the window, or tile it again.</td></tr>
+          <tr><td><kbd>Alt-Comma</kbd> <kbd>Alt-Slash</kbd></td><td>Show a column as an accordion or as tiles.</td></tr>
+          <tr><td><kbd>Ctrl-Left</kbd> <kbd>Ctrl-Right</kbd></td><td>Previous or next workspace.</td></tr>
+          <tr><td><kbd>Alt-1</kbd> to <kbd>Alt-9</kbd></td><td>Go to a workspace.</td></tr>
+          <tr><td><kbd>Alt-Shift-1</kbd> to <kbd>Alt-Shift-9</kbd></td><td>Send the window to a workspace.</td></tr>
+          <tr><td><kbd>Alt-Tab</kbd></td><td>Back to the workspace shown before.</td></tr>
+          <tr><td><kbd>Alt-Shift-N</kbd></td><td>Move the window to the next display.</td></tr>
         </tbody>
       </table>
     </div>
     <p class="section-note">
-      Dinky also binds <kbd>Alt-H</kbd> and <kbd>Alt-L</kbd> to focus left and right. Splay leaves
-      them unbound, so Option-H and Option-L reach apps and tools such as Hammerspoon. Two lines in
-      <code>[mode.main]</code> bring them back, as <a href="{{ '/start/#keys' | relative_url }}">Keys</a> in the manual shows.
+      While Splay runs, <kbd>Cmd-Left</kbd> and <kbd>Cmd-Right</kbd> belong to it. In text fields
+      <kbd>Ctrl-A</kbd> and <kbd>Ctrl-E</kbd> still reach the ends of a line, and in browsers
+      <kbd>Cmd-[</kbd> and <kbd>Cmd-]</kbd> still go back and forward.
+      <a href="{{ '/start/#keys' | relative_url }}">Keys</a> in the manual shows how to hand a key back to an app.
     </p>
   </div>
 </section>
 
 <section class="build" id="build" aria-labelledby="build-title">
   <div class="wrap">
-    <h2 id="build-title">Build and first launch</h2>
+    <h2 id="build-title">Install</h2>
     <div class="build-grid">
       <ol class="steps">
         <li>
           <h3>Build</h3>
           <p>
-            You need Xcode 26 or later, which runs on macOS 15.6 or later. There is no download, and
-            so far Splay has been built on macOS 27 only.
+            You need Xcode 26 or later.
           </p>
 <pre><code>git clone https://github.com/shawntz/splay.git
 cd splay
@@ -250,25 +217,23 @@ open build/Splay.app</code></pre>
           <h3>Allow Accessibility</h3>
           <p>
             Splay asks for Accessibility and waits. Turn it on under System Settings &gt; Privacy &amp;
-            Security &gt; Accessibility. Closing its window before then quits it.
+            Security &gt; Accessibility.
           </p>
         </li>
         <li>
           <h3>Use the strip</h3>
           <p>
-            Once allowed, Splay tiles every open window on screen into the strip, left to right.
-            Quit from its menu bar item and every window goes back where it was.
-            <code>splay doctor</code> checks the config and the macOS settings Splay relies on.
+            Once allowed, Splay tiles every open window into the strip, left to right. Quit from its
+            menu bar item and every window goes back where it was.
           </p>
         </li>
       </ol>
       <div class="build-more">
         <p>
-          The manual covers signing so the grant survives rebuilds, putting the <code>splay</code>
-          command on your <code>PATH</code>, the two macOS settings Splay asks about, moving over from
-          Dinky, and how to remove Splay and undo what it changed.
+          The manual covers the first run in full, the two macOS settings Splay asks about, moving
+          over from Dinky, and how to remove Splay.
         </p>
-        <p><a class="button button-primary" href="{{ '/start/' | relative_url }}">Full build steps</a></p>
+        <p><a class="button button-primary" href="{{ '/start/' | relative_url }}">Read the manual</a></p>
       </div>
     </div>
   </div>
