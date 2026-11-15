@@ -18,7 +18,7 @@ permalink: /
       <a href="https://github.com/mikker/Dinky">Dinky</a>, built around the strip.
     </p>
     <p class="actions">
-      <a class="button button-primary" href="{{ '/start/#build-from-source' | relative_url }}">Get started</a>
+      <a class="button button-primary" href="{{ '/start/' | relative_url }}">Get started</a>
       <a class="button" href="{{ site.repository_url }}">GitHub</a>
     </p>
     <p class="status"><span class="status-dot" aria-hidden="true"></span>For macOS 15 or later. Build it from source with Xcode 26 or later.</p>
@@ -26,7 +26,7 @@ permalink: /
   <div class="wrap wrap-wide">
     {% include demo.html name="strip" class="demo-hero"
       label="One workspace with five windows. A new window opens as a column to the right of the focused one. Cmd-Right and Cmd-Left move focus one column and the strip scrolls to show it. Cmd-End and Cmd-Home jump to the last and first column."
-      caption="A new window opens beside the focused column and nothing else resizes. Cmd-Right and Cmd-Left step one column, Cmd-End and Cmd-Home jump to the ends." %}
+      caption="A new window opens beside the focused column at its own width. Cmd-Right and Cmd-Left step one column, Cmd-End and Cmd-Home jump to the ends." %}
   </div>
 </section>
 
@@ -36,7 +36,7 @@ permalink: /
       <div class="feature-text">
         <h2>A row of columns on every Space</h2>
         <p>
-          A new window opens as a column beside the focused one, and the others keep their widths.
+          A new window opens as a column beside the focused one, at its own width.
           Moving focus scrolls the row just far enough to show the focused column whole. Columns out
           of view leave a sliver at the edge, so you can see what is there.
         </p>
@@ -76,7 +76,7 @@ permalink: /
         <h2>Focus lands where you left it</h2>
         <p>
           Go back to a column and you land on the window you last used there. When another column
-          closes or resizes, the one you are looking at stays put.
+          closes or resizes, the one you are looking at stays in view.
         </p>
         <p>
           Fast presses keep up. Each <kbd>Cmd-Right</kbd> steps one column, without waiting for macOS
@@ -101,7 +101,7 @@ peek = 25                        <span class="c"># points left on screen</span><
           <kbd>Ctrl-Left</kbd> and <kbd>Ctrl-Right</kbd> switch workspace, <kbd>Alt-1</kbd> to
           <kbd>Alt-9</kbd> go to one, and <kbd>Alt-Shift-2</kbd> sends the focused window to
           workspace 2. Each workspace is a macOS Space with a strip of its own, and switching skips
-          the slide animation.
+          the half-second macOS slide.
         </p>
         <p>
           Any workspace can use another layout instead: dwindle, master, a fixed grid or an accordion.
@@ -127,7 +127,7 @@ peek = 25                        <span class="c"># points left on screen</span><
 
     {% include demo.html name="versus" class="demo-wide"
       label="The same five windows opened one after another under two defaults, side by side. On the left, Dinky's default, tiles, splits the space again for each new window. On the right, Splay's default, the strip, gives each window its own width and the strip grows."
-      caption="The same five windows under each default. Dinky's tiles split the space again for each window. Splay's strip keeps every width and grows sideways." %}
+      caption="The same five windows under each default. Dinky's tiles split the space again for each window. Splay's strip gives each window its own width and grows sideways." %}
 
     <div class="table-scroll">
       <table class="keytable">
@@ -139,10 +139,9 @@ peek = 25                        <span class="c"># points left on screen</span><
           <tr><td>Move between columns</td><td><kbd>Alt-H</kbd> <kbd>Alt-L</kbd></td><td><kbd>Cmd-Left</kbd> <kbd>Cmd-Right</kbd></td></tr>
           <tr><td>Jump to the first or last column</td><td>No</td><td><kbd>Cmd-Home</kbd> <kbd>Cmd-End</kbd></td></tr>
           <tr><td>Preset column widths</td><td>No</td><td><kbd>Alt-R</kbd> cycles a list you set</td></tr>
-          <tr><td>Set an exact width</td><td>No</td><td><code>column-width 0.75</code></td></tr>
+          <tr><td>Set a column's width</td><td><kbd>Alt-Minus</kbd> <kbd>Alt-Equal</kbd>, 50 points a step</td><td>Any share, <code>column-width 0.75</code></td></tr>
           <tr><td>Maximize a column</td><td>Fullscreen, until focus moves</td><td>Holds until you toggle it back</td></tr>
           <tr><td>Centre a column on demand</td><td>No</td><td><kbd>Alt-C</kbd>, or always, or on overflow</td></tr>
-          <tr><td>Going back to a column</td><td>Nearest window</td><td>The window you last used</td></tr>
           <tr><td>Sliver left by off-screen columns</td><td>25 points</td><td>1 to 100 points</td></tr>
         </tbody>
       </table>
@@ -230,8 +229,9 @@ open build/Splay.app</code></pre>
       </ol>
       <div class="build-more">
         <p>
-          The manual covers the first run in full, the two macOS settings Splay asks about, moving
-          over from Dinky, and how to remove Splay.
+          The manual covers the first run, the two macOS settings Splay asks about, moving over
+          from Dinky, and how to remove Splay. Like Dinky, Splay switches Spaces through private
+          macOS APIs, so a macOS update can break it until a fix ships.
         </p>
         <p><a class="button button-primary" href="{{ '/start/' | relative_url }}">Read the manual</a></p>
       </div>

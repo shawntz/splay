@@ -22,7 +22,7 @@ opens as a column right of the focused one, and Cmd-Left and Cmd-Right walk
 along the row.
 
 Splay is a fork of [Dinky](https://github.com/mikker/Dinky) by Mikkel
-Malmberg, and nearly all of it is Dinky's. So it also has Dinky's dwindle,
+Malmberg. It keeps Dinky's dwindle,
 fixed and master layouts, an accordion mode, focus borders, a TOML config and a
 `splay` command line for scripts and bars, and Dinky's way of switching Spaces,
 which Dinky's manual puts at about 70 ms instead of half a second. Nothing is
@@ -101,7 +101,7 @@ again.
 ### Accessibility
 
 Splay moves windows and reads keys through Accessibility. Until it has the
-grant, a window says so and waits: Open Accessibility Settings goes to System
+grant, a window says so and waits. Open Accessibility Settings goes to System
 Settings > Privacy & Security > Accessibility, where you turn Splay on, adding
 `build/Splay.app` with + if it isn't listed. The window moves on by itself
 once Splay is allowed. Nothing is tiled before then, and Splay has no menu
@@ -244,7 +244,7 @@ menu, does the same and keeps Splay running with tiling, borders and key
 bindings off; `splay enable on` tiles again. A crash, `kill -9` or Force Quit
 puts nothing back. For those, see [Recovery](commands.md#recovery).
 
-Quitting puts back windows, not the rest: the Spaces Splay created stay, the
+Quitting puts back windows, not the rest. The Spaces Splay created stay, the
 macOS Space switching stays as you left it, and apps whose Enhanced UI
 Splay turned off, so their windows don't animate against it, keep it off.
 
@@ -279,7 +279,7 @@ Dinky, if you use it, can start again once Splay has quit.
 - Apps refuse some sizes (Safari's minimum width, Terminal's grid). Splay lays
   out around them, but tiles can overlap or leave gaps. A window has a minimum
   size once it comes back at the same size for two different sizes asked, so
-  the first window of an app may overlap its neighbor until its tile changes
+  the first window of an app may overlap its neighbour until its tile changes
   size. Splay remembers each app's minimum size; Clear Saved Minimum Sizes in
   the menu forgets them.
 - macOS cannot focus a window on another Space, so Splay switches first.

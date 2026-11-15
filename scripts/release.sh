@@ -20,6 +20,12 @@ changelog_section() {
   ' "$changelog" | sed -e '/./,$!d' | sed -e ':a' -e '/^\n*$/{$d;N;ba' -e '}'
 }
 
+# The site shows the version and the changelog. On a fork a push does not start the Pages workflow, so start it.
+deploy_site() {
+  gh workflow run pages.yml -R "$repo" --ref main >/dev/null \
+    || echo "warning: the site was not redeployed; run: gh workflow run pages.yml -R $repo --ref main" >&2
+}
+
 : "${NOTARYTOOL_PROFILE:?Set NOTARYTOOL_PROFILE to a notarytool keychain profile (make one with: xcrun notarytool store-credentials)}"
 [[ "$(git branch --show-current)" == main ]] || { echo 'Release from main' >&2; exit 1; }
 [[ -z "$(git status --porcelain)" ]] || { echo 'Commit your changes first' >&2; exit 1; }
@@ -77,6 +83,7 @@ changelog_section "$version" > dist/release-notes.md
 # A published release is never replaced.
 if [[ "$(gh release view "$tag" -R "$repo" --json isDraft --jq .isDraft 2>/dev/null || true)" == false ]]; then
   echo "$tag is already published: https://github.com/$repo/releases/tag/$tag"
+  deploy_site
   exit 0
 fi
 
@@ -93,6 +100,5 @@ else
 fi
 gh release upload "$tag" -R "$repo" dist/Splay.app.zip dist/appcast.xml --clobber
 gh release edit "$tag" -R "$repo" --draft=false --latest
-# The site shows the version, and on a fork a push does not start the Pages workflow by itself.
-gh workflow run pages.yml -R "$repo" --ref main >/dev/null 2>&1 || true
+deploy_site
 echo "==> https://github.com/$repo/releases/tag/$tag"

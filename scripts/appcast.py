@@ -52,7 +52,7 @@ def release_notes(version):
     text = "\n".join(body).strip()
     if not text:
         return None
-    html = subprocess.run(["gh", "api", "markdown", "-f", "mode=gfm", "-f", f"context={REPO}", "-f", f"text={text}"],
+    html = subprocess.run(["gh", "api", "markdown", "-f", "mode=markdown", "-f", f"text={text}"],
                           check=True, capture_output=True, text=True).stdout
     return NOTES_PAGE.replace("{notes}", html.strip())
 

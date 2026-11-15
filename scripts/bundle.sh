@@ -48,6 +48,9 @@ cp "$(swift build "${BUILD_FLAGS[@]}" --show-bin-path)/dinky" "$APP/Contents/Mac
 cp Resources/Info.plist "$APP/Contents/Info.plist"
 plutil -replace CFBundleShortVersionString -string "$VERSION" "$APP/Contents/Info.plist"
 plutil -replace CFBundleVersion -string "$BUILD" "$APP/Contents/Info.plist"
+# Only release packaging keeps the update feed. A local build would be offered the latest release in place of
+# itself, signed by someone else.
+[[ "${FEED:-}" == 1 ]] || plutil -remove SUFeedURL "$APP/Contents/Info.plist"
 
 # The app icon: Resources/Splay.icon (Icon Composer) compiled into Assets.car and an icns fallback.
 xcrun actool "$PWD/Resources/Splay.icon" --compile "$ICON_OUT" --platform macosx --minimum-deployment-target 15.0 \

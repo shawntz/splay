@@ -6,7 +6,7 @@
 
 <p align="center">
   A scrolling tiling window manager for macOS.<br>
-  One endless row of windows per Space, driven from the keyboard.
+  One scrolling row of windows per Space, driven from the keyboard.
 </p>
 
 <p align="center">
@@ -27,34 +27,31 @@
     <img src="docs/assets/demo/strip.gif" width="960" alt="A strip of window columns on a mock desktop. New windows open to the right of the focused one, Cmd-Left and Cmd-Right move focus a column at a time, and the strip scrolls to follow.">
   </picture>
   <br>
-  <sub>Rendered from Splay's layout engine.</sub>
+  <sub>The animations on this page are rendered from Splay's layout engine.</sub>
 </p>
 
 Splay puts the windows on each Space in one row of columns that runs past the edges of the display.
-A new window opens beside the one you're in, and nothing else resizes.
-<kbd>Cmd</kbd>+<kbd>←</kbd> and <kbd>Cmd</kbd>+<kbd>→</kbd> walk the row. It is the niri and PaperWM
-idea on a Mac, with System Integrity Protection left on.
+A new window opens beside the one you're in at its own width, and the row grows sideways. It is
+the niri and PaperWM idea on a Mac, with System Integrity Protection left on.
 
 ## Why Splay
 
-- **Every Space scrolls.** The strip is the layout from the first launch, with nothing to configure.
+- **Every workspace scrolls.** The strip is the layout from the first launch, with nothing to configure.
 - **The arrow keys walk it.** <kbd>Cmd</kbd>+<kbd>←</kbd> and <kbd>→</kbd> step one column.
   <kbd>Cmd</kbd>+<kbd>Home</kbd> and <kbd>End</kbd> jump to either end.
-- **Columns resize from the keyboard.** <kbd>Alt</kbd>+<kbd>R</kbd> cycles a third, a half and two
+- **Widths on one key.** <kbd>Alt</kbd>+<kbd>R</kbd> cycles a third, a half and two
   thirds. <kbd>Alt</kbd>+<kbd>M</kbd> maximizes and restores. <kbd>Alt</kbd>+<kbd>C</kbd> centres.
 - **Focus remembers.** Go back to a column and you land on the window you left there.
-- **The view holds still.** When another column closes or resizes, the one you're looking at stays put.
+- **The view holds still.** When another column closes or resizes, the one you're looking at stays in view.
 - **Fast presses keep up.** Each press of <kbd>Cmd</kbd>+<kbd>→</kbd> steps one column, without
   waiting for macOS to catch up.
-- **Rules place windows.** `run = 'column-width 0.66'` opens an app at two thirds of the screen.
+- **Rules size windows.** `run = 'column-width 0.66'` opens an app at two thirds of the screen.
 
 <p align="center">
   <picture>
     <source media="(prefers-reduced-motion: reduce)" srcset="docs/assets/demo/widths-poster.png">
     <img src="docs/assets/demo/widths.gif" width="960" alt="Alt-R steps the focused column through a third, a half and two thirds of the screen. Alt-M widens it to fill the screen and back. Alt-C centres it.">
   </picture>
-  <br>
-  <sub>Rendered from Splay's layout engine.</sub>
 </p>
 
 ## Install
@@ -69,7 +66,8 @@ open build/Splay.app
 ```
 
 Splay asks for Accessibility on first launch. Once you allow it, it tiles every open window into
-the strip and takes its keys. Quit from the menu bar and every window goes back where it was.
+the strip, and Cmd-Left and Cmd-Right stop reaching apps. Quit from the menu bar and every window
+goes back where it was.
 [Get started](https://shawntz.github.io/splay/start/) covers the first run, the two macOS settings
 Splay asks about, and how to remove it.
 
@@ -100,7 +98,8 @@ to an app, list it under `exclude-apps`, as
 
 ## Configure
 
-Splay writes `~/.config/splay/splay.toml` on first run and applies changes when you save.
+Splay writes `~/.config/splay/splay.toml` on first run, with every setting and binding in it, and
+applies changes when you save. Edit its `[scrolling]` table, and add rules below it:
 
 ```toml
 [scrolling]
@@ -114,7 +113,8 @@ app-id = 'com.apple.Safari'
 run = 'column-width 0.66'
 ```
 
-Every command also runs from a terminal, a script or a bar such as SketchyBar:
+Every command also runs from a terminal, a script or a bar such as SketchyBar, once the `splay`
+command is linked as [Get started](https://shawntz.github.io/splay/start/#build-from-source) shows:
 
 ```sh
 splay column-width 0.75
@@ -132,14 +132,12 @@ The manual lists every [setting](https://shawntz.github.io/splay/configuration/)
     <source media="(prefers-reduced-motion: reduce)" srcset="docs/assets/demo/workspaces-poster.png">
     <img src="docs/assets/demo/workspaces.gif" width="960" alt="Two workspaces, each with its own strip. Ctrl-Right and Ctrl-Left switch between them and Alt-Shift-2 sends the focused window to workspace 2.">
   </picture>
-  <br>
-  <sub>Rendered from Splay's layout engine.</sub>
 </p>
 
-- Workspaces are native macOS Spaces, each with its own strip, and switching skips the slide animation.
+- Workspaces are native macOS Spaces, each with its own strip, and switching skips the half-second macOS slide.
 - Any workspace can use another layout: dwindle, master, a fixed grid or an accordion.
 - Window rules float, place or size windows by app, title or kind.
-- Focus borders, focus follows mouse and drag to rearrange.
+- Focus borders, focus follows mouse, and dragging to rearrange.
 - `splay doctor` checks your config and the macOS settings Splay relies on.
 
 ## Splay and Dinky
@@ -151,7 +149,7 @@ option. Splay is built around the strip.
 <p align="center">
   <picture>
     <source media="(prefers-reduced-motion: reduce)" srcset="docs/assets/demo/versus-poster.png">
-    <img src="docs/assets/demo/versus.gif" width="960" alt="The same five windows opened under each default. Dinky's tiles split the space again for each window. Splay's strip keeps every window's width and grows sideways.">
+    <img src="docs/assets/demo/versus.gif" width="960" alt="The same five windows opened under each default. Dinky's tiles split the space again for each window. Splay's strip gives each window its own width and grows sideways.">
   </picture>
   <br>
   <sub>Rendered from the layout engine the two share.</sub>
@@ -163,10 +161,9 @@ option. Splay is built around the strip.
 | Move between columns | <kbd>Alt</kbd>+<kbd>H</kbd> <kbd>L</kbd> | <kbd>Cmd</kbd>+<kbd>←</kbd> <kbd>→</kbd> |
 | Jump to the first or last column | No | <kbd>Cmd</kbd>+<kbd>Home</kbd> <kbd>End</kbd> |
 | Preset column widths | No | <kbd>Alt</kbd>+<kbd>R</kbd> cycles a list you set |
-| Set an exact width | No | `column-width 0.75` |
+| Set a column's width | <kbd>Alt</kbd>+<kbd>-</kbd> <kbd>=</kbd>, 50 points a step | Any share, `column-width 0.75` |
 | Maximize a column | Fullscreen, until focus moves | Holds until you toggle it back |
 | Centre a column on demand | No | <kbd>Alt</kbd>+<kbd>C</kbd>, or always, or on overflow |
-| Going back to a column | Nearest window | The window you last used |
 | Sliver left by off-screen columns | 25 points | 1 to 100 points |
 
 Dinky's other layouts, workspaces, rules, hooks and command line are all in Splay. The two install
