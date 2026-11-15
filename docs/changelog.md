@@ -13,6 +13,10 @@ https://shawntz.github.io/splay/changelog/.</p>
 Splay's releases. `CHANGELOG.md` in the source is upstream Dinky's, merged in
 as it stands, and lists Dinky's releases.
 
+## Unreleased
+
+- `brew install --cask shawntz/tap/splay` installs Splay with Homebrew and links the `splay` command.
+
 ## 0.2
 
 - When Splay finds a new version on its own, it shows `↑` after the workspace number and an Update to Splay item in its menu, and keeps both until you install or skip the update. Before, the update window could open behind other windows.

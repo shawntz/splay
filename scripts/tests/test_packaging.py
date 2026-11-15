@@ -6,17 +6,20 @@ Sparkle's. Nothing is built, signed or notarized, the keychain and the network a
 build/, dist/ and .build/ are left alone. The mocks log every call, so a test can check what ran and in what order.
 """
 import email.utils
+import hashlib
 import html
 import json
 import os
 from pathlib import Path
 import plistlib
+import re
 import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
 import xml.etree.ElementTree as ET
+import zipfile
 
 ROOT = Path(__file__).resolve().parents[2]
 SPARKLE = "{http://www.andymatuschak.org/xml-namespaces/sparkle}"
@@ -255,6 +258,16 @@ class PackagingTests(unittest.TestCase):
     def appcast_item(self):
         return ET.parse(self.root / "dist/appcast.xml").getroot().find("channel/item")
 
+    def cask(self):
+        return (self.root / "dist/splay.rb").read_text()
+
+    @staticmethod
+    def stanza(cask, name, indent=2):
+        """The quoted argument of a cask stanza, such as url, at the indent of the cask's own stanzas."""
+        found = re.findall(rf'^{" " * indent}{name} "([^"]*)"$', cask, re.MULTILINE)
+        assert len(found) == 1, f"{len(found)} {name} stanzas"
+        return found[0]
+
     # scripts/bundle.sh and scripts/check-universal.sh
 
     def test_universal_build_and_lookup_flags_match(self):
@@ -438,20 +451,24 @@ class PackagingTests(unittest.TestCase):
         self.assertEqual((info["CFBundleShortVersionString"], info["CFBundleVersion"]), ("0.24", "223"))
         dist = self.root / "dist"
         self.assertEqual((dist / "signature.txt").read_text().strip(), SIGNATURE)
-        self.assertEqual(list(dist.glob("*.rb")), [], "Splay ships no Homebrew cask")
+        self.assertEqual([path.name for path in dist.glob("*.rb")], ["splay.rb"])
         self.assertFalse((self.root / "build").exists(), "a copy running from build/ is left alone")
         item = self.appcast_item()
         self.assertEqual(item.find("enclosure").get(f"{SPARKLE}version"), "223")
         self.assertIsNone(item.find(f"{SPARKLE}hardwareRequirements"))
         self.assertIn("Changed in 0.24.", item.findtext("description"))
 
-    def test_thin_archive_fails_before_sparkle_signing(self):
+    def test_thin_archive_fails_before_sparkle_signing_and_the_cask(self):
+        # A cask from an earlier run. The cask installs on Intel too, so after a thin archive none may be left.
+        (self.root / "dist").mkdir()
+        (self.root / "dist/splay.rb").write_text("from an earlier run")
         result = self.run_script("package-release.sh", "0.24", MOCK_THIN_ARCHIVE="1")
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("unpacked/Splay.app/Contents/MacOS/splay has no x86_64 slice", result.stderr)
         self.assertEqual(self.commands("sign_update"), [])
         self.assertFalse((self.root / "dist/signature.txt").exists())
         self.assertFalse((self.root / "dist/appcast.xml").exists())
+        self.assertFalse((self.root / "dist/splay.rb").exists())
 
     def test_package_needs_a_notarization_profile(self):
         for profile in [None, ""]:
@@ -474,6 +491,7 @@ class PackagingTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(self.info("dist/build/Splay.app")["CFBundleShortVersionString"], "0.24")
         self.assertIn("/download/v0.24/", self.appcast_item().find("enclosure").get("url"))
+        self.assertEqual(self.stanza(self.cask(), "version"), "0.24")
 
     def test_package_signs_with_a_developer_id_identity(self):
         named = "Developer ID Application: Someone Else (TEAM000002)"
@@ -504,7 +522,7 @@ class PackagingTests(unittest.TestCase):
             with self.subTest(status=status):
                 # Files from an earlier run, which the script removes so they cannot pass for this run's.
                 dist.mkdir(exist_ok=True)
-                for stale in ["Splay.app.zip", "signature.txt", "appcast.xml"]:
+                for stale in ["Splay.app.zip", "signature.txt", "appcast.xml", "splay.rb"]:
                     (dist / stale).write_text("from an earlier run")
                 self.clear_log()
                 result = self.run_script("package-release.sh", "0.24", MOCK_NOTARY_STATUS=status)
@@ -538,6 +556,44 @@ class PackagingTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(len(self.commands("sign_update")), 1)
         self.assertEqual((self.root / "dist/signature.txt").read_text().strip(), SIGNATURE)
+
+    def test_package_writes_the_cask_with_the_version_and_the_archives_sha256(self):
+        result = self.run_script("package-release.sh", "0.24")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        digest = hashlib.sha256((self.root / "dist/Splay.app.zip").read_bytes()).hexdigest()
+        template = (self.root / "scripts/splay.rb.template").read_text().splitlines()
+        cask = self.cask().splitlines()
+        self.assertEqual(len(cask), len(template))
+        # Only the two placeholder lines differ from the template.
+        self.assertEqual([(old, new) for old, new in zip(template, cask) if old != new], [
+            ('  version "@VERSION@"', '  version "0.24"'),
+            ('  sha256 "@SHA256@"', f'  sha256 "{digest}"'),
+        ])
+
+    def test_the_cask_names_the_files_that_ship(self):
+        result = self.run_script("package-release.sh", "0.24")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        cask = self.cask()
+        self.assertEqual(re.findall(r'^cask "([^"]*)" do$', cask, re.MULTILINE), ["splay"])
+        # The release asset that release.sh uploads, which the appcast offers too.
+        url = self.stanza(cask, "url").replace("#{version}", self.stanza(cask, "version"))
+        self.assertEqual(url, "https://github.com/shawntz/splay/releases/download/v0.24/Splay.app.zip")
+        self.assertEqual(url, self.appcast_item().find("enclosure").get("url"))
+        with zipfile.ZipFile(self.root / "dist/Splay.app.zip") as archive:
+            shipped = archive.namelist()
+        self.assertEqual(self.stanza(cask, "app"), "Splay.app")
+        self.assertEqual({name.split("/")[0] for name in shipped}, {"Splay.app"})
+        # Homebrew links the binary under its own file name, so the command is splay.
+        binary = self.stanza(cask, "binary")
+        self.assertEqual(binary, "#{appdir}/Splay.app/Contents/MacOS/splay")
+        self.assertIn(binary.removeprefix("#{appdir}/"), shipped)
+        info = self.info("dist/build/Splay.app")
+        self.assertEqual(Path(binary).name, info["CFBundleExecutable"])
+        # livecheck reads the feed the app updates from, and the cask asks for the macOS the app does.
+        self.assertEqual(self.stanza(cask, "url", indent=4), self.source_info["SUFeedURL"])
+        self.assertEqual(self.source_info["LSMinimumSystemVersion"], "15.0", "update depends_on macos in the cask")
+        self.assertIn("\n  depends_on macos: :sequoia\n", cask)
+        self.assertIn(f'"~/Library/Preferences/{info["CFBundleIdentifier"]}.plist",', cask)
 
     # scripts/appcast.py
 

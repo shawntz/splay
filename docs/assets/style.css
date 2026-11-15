@@ -742,6 +742,10 @@ kbd {
   margin: 14px 0 0;
 }
 
+.steps pre + p {
+  margin-top: 14px;
+}
+
 .build-more {
   padding: 26px;
   border: 1px solid var(--line);

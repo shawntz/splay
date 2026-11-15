@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Prepares, tests, packages, tags and publishes a GitHub release from a clean, pushed main.
+# Prepares, tests, packages, tags and publishes a GitHub release from a clean, pushed main, then puts its cask
+# in the shawntz/homebrew-tap repository.
 # Usage: NOTARYTOOL_PROFILE=<profile> scripts/release.sh [X.Y]   (run again to retry a failed release)
 # Without a version it bumps the latest tag by 0.1. Preparing turns the `## Unreleased` section of
 # docs/changelog.md into `## X.Y`, sets the site's version and commits and pushes "Release X.Y"; a rerun reuses
@@ -10,6 +11,7 @@ version="${1:-}"
 version="${version#v}"
 repo=shawntz/splay
 changelog=docs/changelog.md
+tap=git@github.com:shawntz/homebrew-tap.git
 
 # Prints the body of a `## ` section of the changelog, without surrounding blank lines.
 changelog_section() {
@@ -18,6 +20,29 @@ changelog_section() {
     found && /^## / { exit }
     found { print }
   ' "$changelog" | sed -e '/./,$!d' | sed -e ':a' -e '/^\n*$/{$d;N;ba' -e '}'
+}
+
+# Puts dist/splay.rb into the tap as Casks/splay.rb through a temporary clone, so a local tap checkout is left
+# alone. Callers test its status, which turns off set -e inside it, so each step checks its own.
+update_tap() (
+  grep -qx "  version \"$version\"" dist/splay.rb || { echo "dist/splay.rb is not the cask for $version" >&2; exit 1; }
+  checkout="$(mktemp -d "${TMPDIR:-/tmp}/splay-tap.XXXXXX")" || exit 1
+  trap 'rm -rf "$checkout"' EXIT
+  git clone --quiet --depth 1 "$tap" "$checkout" || exit 1
+  mkdir -p "$checkout/Casks" && cp dist/splay.rb "$checkout/Casks/splay.rb" || exit 1
+  git -C "$checkout" add Casks/splay.rb || exit 1
+  if ! git -C "$checkout" diff --cached --quiet; then
+    git -C "$checkout" commit -q -m "Update splay to $version" || exit 1
+    git -C "$checkout" push -q origin HEAD || exit 1
+  fi
+  echo "==> Homebrew tap: splay $version"
+)
+
+# The release stays published when the tap update fails, so this warns and the script carries on.
+tap_failed() {
+  echo "warning: $tag is published, but the Homebrew tap was not updated to it." >&2
+  echo "warning: to retry, run scripts/release.sh $version while HEAD is still the Release $version commit." >&2
+  echo "warning: after other commits, copy the splay.rb asset of $tag to Casks/splay.rb in the tap by hand." >&2
 }
 
 # The site shows the version and the changelog. On a fork a push does not start the Pages workflow, so start it.
@@ -80,9 +105,14 @@ mkdir -p dist
 changelog_section "$version" > dist/release-notes.md
 [[ -s dist/release-notes.md ]] || { echo "$changelog has no notes under ## $version" >&2; exit 1; }
 
-# A published release is never replaced.
+# A published release is never replaced. A rerun retries its tap update with the cask it shipped, and the site.
 if [[ "$(gh release view "$tag" -R "$repo" --json isDraft --jq .isDraft 2>/dev/null || true)" == false ]]; then
   echo "$tag is already published: https://github.com/$repo/releases/tag/$tag"
+  if [[ -z "$latest" ]]; then
+    echo "warning: could not read the latest release, so the Homebrew tap is left alone" >&2
+  elif ! { gh release download "$tag" -R "$repo" -p splay.rb -D dist --clobber && update_tap; }; then
+    tap_failed
+  fi
   deploy_site
   exit 0
 fi
@@ -98,7 +128,10 @@ if gh release view "$tag" -R "$repo" >/dev/null 2>&1; then
 else
   gh release create "$tag" -R "$repo" --verify-tag --draft --title "Splay $version" --notes-file dist/release-notes.md
 fi
-gh release upload "$tag" -R "$repo" dist/Splay.app.zip dist/appcast.xml --clobber
+gh release upload "$tag" -R "$repo" dist/Splay.app.zip dist/appcast.xml dist/splay.rb --clobber
 gh release edit "$tag" -R "$repo" --draft=false --latest
+tap_updated=true
+update_tap || tap_updated=false
 deploy_site
 echo "==> https://github.com/$repo/releases/tag/$tag"
+$tap_updated || tap_failed

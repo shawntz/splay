@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Builds a universal Splay.app, signs it with Developer ID and the hardened runtime, notarizes and staples it,
-# zips it into dist/, and writes the Sparkle appcast. Publishes nothing.
+# zips it into dist/, and writes the Sparkle appcast and the Homebrew cask. Publishes nothing.
 # Usage: NOTARYTOOL_PROFILE=<profile> scripts/package-release.sh 0.1
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -26,7 +26,7 @@ for key in SUFeedURL SUPublicEDKey; do
     || { echo "The packaged Info.plist has no $key; see RELEASING.md" >&2; exit 1; }
 done
 
-rm -f dist/Splay.app.zip dist/signature.txt dist/appcast.xml
+rm -f dist/Splay.app.zip dist/signature.txt dist/appcast.xml dist/splay.rb
 tmp="$(mktemp -d)"; trap 'rm -rf "$tmp"' EXIT
 echo "==> Notarizing with profile $profile"
 ditto -c -k --sequesterRsrc --keepParent "$app" "$tmp/Splay.zip"
@@ -42,10 +42,14 @@ ditto -c -k --sequesterRsrc --keepParent "$app" dist/Splay.app.zip
 ditto -x -k dist/Splay.app.zip "$tmp/unpacked"
 scripts/check-universal.sh "$tmp/unpacked/Splay.app"
 
-echo "==> Signing the update and writing the appcast"
+echo "==> Signing the update and writing the appcast and the cask"
 sign_update="$(find .build/artifacts -path '*/Sparkle/bin/sign_update' | head -1)"
 [[ -x "$sign_update" ]] || { echo 'sign_update not found under .build/artifacts' >&2; exit 1; }
 "$sign_update" --account "$account" -p dist/Splay.app.zip > dist/signature.txt
 # -E: appcast.py checks its inputs with assert, which PYTHONOPTIMIZE in the environment would skip.
 python3 -E scripts/appcast.py "$version"
+# The cask names no architecture, so it is written only once the shipped archive has passed check-universal.sh.
+sha256="$(shasum -a 256 dist/Splay.app.zip | cut -d' ' -f1)"
+[[ "$sha256" =~ ^[0-9a-f]{64}$ ]] || { echo 'Could not hash dist/Splay.app.zip' >&2; exit 1; }
+sed -e "s/@VERSION@/$version/" -e "s/@SHA256@/$sha256/" scripts/splay.rb.template > dist/splay.rb
 echo "==> dist/Splay.app.zip ($(du -h dist/Splay.app.zip | cut -f1)), version $version build $build"

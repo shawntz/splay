@@ -59,14 +59,19 @@ the niri and PaperWM idea on a Mac, with System Integrity Protection left on.
 
 ## Install
 
-Download [Splay.app.zip](https://github.com/shawntz/splay/releases/latest/download/Splay.app.zip),
-unzip it, drag Splay to Applications and open it. New versions are offered in the app, and Check
-for Updates is in its menu. When Splay finds one on its own, `↑` appears after the workspace number
-in the menu bar.
+```sh
+brew install --cask shawntz/tap/splay
+```
+
+This puts Splay in Applications and links the `splay` command. Or download
+[Splay.app.zip](https://github.com/shawntz/splay/releases/latest/download/Splay.app.zip), unzip it
+and drag Splay to Applications. Then open Splay. New versions are offered in the app, and Check for
+Updates is in its menu. When Splay finds one on its own, `↑` appears after the workspace number in
+the menu bar.
 
 Splay asks for Accessibility on first launch. Once you allow it, it tiles every open window into
-the strip, and Cmd-Left and Cmd-Right stop reaching apps. Quit from the menu bar and every window
-goes back where it was.
+the strip, and Cmd-Left and Cmd-Right stop reaching apps. Quit from the menu bar and the windows on
+the Desktops you can see go back where they were.
 [Get started](https://shawntz.github.io/splay/start/) covers the first run, the two macOS settings
 Splay asks about, and how to remove it.
 

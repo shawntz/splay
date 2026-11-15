@@ -23,12 +23,13 @@ install: bundle
     ln -sf "$PWD/build/Splay.app/Contents/MacOS/splay" ~/.local/bin/splay
     ls -l ~/.local/bin/splay
 
-# Build, sign, notarize and zip a release into dist/ without publishing. Needs NOTARYTOOL_PROFILE.
+# Build, sign, notarize and zip a release into dist/, with its appcast and Homebrew cask, without publishing.
+# Needs NOTARYTOOL_PROFILE.
 package version:
     scripts/package-release.sh {{quote(version)}}
 
-# Prepare, test, package, tag and publish a GitHub release from a clean, pushed main. The version defaults
-# to the latest tag plus 0.1. Needs NOTARYTOOL_PROFILE.
+# Prepare, test, package, tag and publish a GitHub release from a clean, pushed main, then update the Homebrew
+# tap. The version defaults to the latest tag plus 0.1. Needs NOTARYTOOL_PROFILE.
 release version="":
     scripts/release.sh {{quote(version)}}
 

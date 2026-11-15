@@ -54,14 +54,23 @@ Status: new. Splay is built for macOS 15 or later and developed on macOS 27.
 
 ## Install
 
-Download [Splay.app.zip](https://github.com/shawntz/splay/releases/latest/download/Splay.app.zip),
+With [Homebrew](https://brew.sh):
+
+```sh
+brew install --cask shawntz/tap/splay
+```
+
+Homebrew puts Splay in Applications and links the `splay` command onto your
+`PATH`.
+
+Or download [Splay.app.zip](https://github.com/shawntz/splay/releases/latest/download/Splay.app.zip),
 unzip it and drag Splay to Applications. Releases are signed and notarized, and
 run on Apple silicon and Intel. Splay offers each new version in the app, and
 Check for Updates is in its menu. When Splay finds a new version on its own, it
 shows `↑` after the workspace number and adds Update to Splay, with the version,
 above Check for Updates. Choose it to see the update.
 
-To use the `splay` command, link it onto your `PATH`:
+To use the `splay` command with a download, link it onto your `PATH`:
 
 ```sh
 mkdir -p ~/.local/bin
@@ -261,8 +270,11 @@ if Dinky turned the Space switching off, it stays off and Splay doesn't ask.
 ## Quit and restore
 
 Quit Splay from its menu, `kill` it, log out, or close the terminal of an
-attached run such as `just run`, and every window goes back to the frame and
-Space it had before Splay tiled it. `splay enable off`, or Enabled in the
+attached run such as `just run`, and each window on a Desktop that is showing
+goes back to the frame and Space it had before Splay tiled it. A window on a
+Desktop that is not showing stays where Splay put it, because macOS only lets
+Splay move windows on a Desktop it can see, and Splay forgets where that window
+was. `splay enable off`, or Enabled in the
 menu, does the same and keeps Splay running with tiling, borders and key
 bindings off; `splay enable on` tiles again. A crash, `kill -9` or Force Quit
 puts nothing back. For those, see [Recovery](commands.md#recovery).
@@ -275,9 +287,11 @@ Splay turned off, so their windows don't animate against it, keep it off.
 
 1. If `start-at-login = true`, set it to `false` and save while Splay runs,
    or turn Splay off in System Settings > General > Login Items & Extensions.
-2. Quit Splay from its menu. Every window goes back. Before it has
+2. Quit Splay from its menu. The windows on the Desktops you can see go back. Before it has
    Accessibility it has no menu, so close its window, which quits it.
 3. Delete `/Applications/Splay.app` or `build/Splay.app`, and `~/.local/bin/splay`.
+   With Homebrew, run `brew uninstall --cask splay` instead. With `--zap` it also
+   moves the files in step 4 and Splay's preferences file to the Trash.
 4. Delete `~/.config/splay`, `~/Library/Application Support/splay`,
    `~/Library/Caches/com.shawnschwartz.splay` and `~/Library/Logs/splay.log`,
    and run `defaults delete com.shawnschwartz.splay`.
@@ -307,6 +321,9 @@ Dinky, if you use it, can start again once Splay has quit.
   size. Splay remembers each app's minimum size; Clear Saved Minimum Sizes in
   the menu forgets them.
 - macOS cannot focus a window on another Space, so Splay switches first.
+- Quitting puts back only the windows on a Desktop that is showing. The rest
+  stay where Splay tiled them, and one parked off an edge stays there until
+  you drag it back or start Splay again.
 - The order of a strip is not saved. Quitting puts the windows back, and the
   next start lines them up left to right as they then stand. Columns parked off
   an edge share that edge, so after a crash, or when a hidden app comes back,

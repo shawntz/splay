@@ -46,8 +46,9 @@ struct ManualTests {
     private static func banned() throws -> [(what: String, pattern: Regex<AnyRegexOutput>)] {
         [
             ("upstream's command, a path of its own or its site", try Regex(#"dinky"#)),
-            // `brew tap`, or `brew install` of an owner/tap/name: Splay is built from source.
-            ("a Homebrew tap install", try Regex(#"brew\s+(tap\b|(re)?install\b.*\b[\w.-]+/[\w.-]+/[\w.-]+)"#)),
+            // `brew tap`, or `brew install` of an owner/tap/name, except Splay's own tap and cask.
+            ("a Homebrew tap install", try Regex(
+                #"brew\s+(tap\b(?!\s+shawntz/tap(?![\w-]))|(re)?install\b.*\b(?!shawntz/tap/splay(?![\w-]))[\w.-]+/[\w.-]+/[\w.-]+)"#)),
             ("a DINKY_ hook variable", try Regex(#"DINKY_"#)),
         ]
     }
@@ -58,6 +59,9 @@ struct ManualTests {
         let lowerCase = "upstream's command, a path of its own or its site"
         #expect(caught("brew install --cask mikker/tap/dinky") == [lowerCase, "a Homebrew tap install"])
         #expect(caught("brew tap mikker/tap") == ["a Homebrew tap install"])
+        #expect(caught("brew install --cask mikker/tap/splay") == ["a Homebrew tap install"])
+        #expect(caught("brew install --cask shawntz/tap/splay").isEmpty)
+        #expect(caught("brew tap shawntz/tap").isEmpty)
         #expect(caught("#:schema https://dinky.rodeo/schemas/dinky.json") == [lowerCase])
         #expect(caught("turn it off, or `dinky doctor` warns about it") == [lowerCase])
         #expect(caught("copy ~/.config/dinky/dinky.toml") == [lowerCase])
@@ -81,8 +85,8 @@ struct ManualTests {
             }
         }
         #expect(found.isEmpty, """
-            Splay's command and paths are spelled \(Brand.name), its site is https://shawntz.github.io/splay/, it has \
-            no Homebrew tap, and its hook variables start with \(Brand.envPrefix):
+            Splay's command and paths are spelled \(Brand.name), its site is https://shawntz.github.io/splay/, its \
+            Homebrew tap is shawntz/tap, and its hook variables start with \(Brand.envPrefix):
             \(found.joined(separator: "\n"))
             """)
     }
