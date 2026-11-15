@@ -1,7 +1,7 @@
 ---
 layout: landing
 title: A scrolling tiling window manager for macOS
-description: Splay lays each macOS Space out as one row of columns that Cmd-Left and Cmd-Right scroll through. System Integrity Protection stays on.
+description: Splay lays each macOS Space out as one row of columns that Cmd-Left and Cmd-Right scroll through. Signed, notarized and updated in the app, with System Integrity Protection left on.
 permalink: /
 ---
 
@@ -18,10 +18,11 @@ permalink: /
       <a href="https://github.com/mikker/Dinky">Dinky</a>, built around the strip.
     </p>
     <p class="actions">
-      <a class="button button-primary" href="{{ '/start/' | relative_url }}">Get started</a>
+      <a class="button button-primary" href="{{ site.repository_url }}/releases/latest/download/Splay.app.zip">Download</a>
+      <a class="button" href="{{ '/start/' | relative_url }}">Get started</a>
       <a class="button" href="{{ site.repository_url }}">GitHub</a>
     </p>
-    <p class="status"><span class="status-dot" aria-hidden="true"></span>For macOS 15 or later. Build it from source with Xcode 26 or later.</p>
+    <p class="status"><span class="status-dot" aria-hidden="true"></span>Version {{ site.version }} for macOS 15 or later, on Apple silicon and Intel. Signed and notarized, and it offers its own updates.</p>
   </div>
   <div class="wrap wrap-wide">
     {% include demo.html name="strip" class="demo-hero"
@@ -203,9 +204,11 @@ peek = 25                        <span class="c"># points left on screen</span><
     <div class="build-grid">
       <ol class="steps">
         <li>
-          <h3>Build</h3>
+          <h3>Download</h3>
           <p>
-            You need Xcode 26 or later.
+            Get <a href="{{ site.repository_url }}/releases/latest/download/Splay.app.zip">Splay.app.zip</a>,
+            unzip it and drag Splay to Applications. New versions are offered in the app. To build
+            it yourself instead, with Xcode 26 or later:
           </p>
 <pre><code>git clone https://github.com/shawntz/splay.git
 cd splay

@@ -10,12 +10,13 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/shawntz/splay/releases/latest"><img src="https://img.shields.io/github/v/release/shawntz/splay?label=release&color=1456E0" alt="Latest release"></a>
   <img src="https://img.shields.io/badge/macOS-15%2B-0A1A44?logo=apple&logoColor=white" alt="macOS 15 or later">
   <a href="LICENSE"><img src="https://img.shields.io/badge/licence-MIT-2F8CFF" alt="MIT licence"></a>
 </p>
 
 <p align="center">
-  <a href="#install"><b>Install</b></a> ·
+  <a href="https://github.com/shawntz/splay/releases/latest/download/Splay.app.zip"><b>Download</b></a> ·
   <a href="https://shawntz.github.io/splay/">Website</a> ·
   <a href="https://shawntz.github.io/splay/start/">Manual</a> ·
   <a href="https://shawntz.github.io/splay/changelog/">Changelog</a>
@@ -46,6 +47,8 @@ the niri and PaperWM idea on a Mac, with System Integrity Protection left on.
 - **Fast presses keep up.** Each press of <kbd>Cmd</kbd>+<kbd>→</kbd> steps one column, without
   waiting for macOS to catch up.
 - **Rules size windows.** `run = 'column-width 0.66'` opens an app at two thirds of the screen.
+- **Updates in one click.** Releases are signed, notarized and universal, and Splay offers each new
+  one in the app.
 
 <p align="center">
   <picture>
@@ -56,7 +59,20 @@ the niri and PaperWM idea on a Mac, with System Integrity Protection left on.
 
 ## Install
 
-Build it from source. You need Xcode 26 or later.
+Download [Splay.app.zip](https://github.com/shawntz/splay/releases/latest/download/Splay.app.zip),
+unzip it, drag Splay to Applications and open it. New versions are offered in the app, and Check
+for Updates is in its menu.
+
+Splay asks for Accessibility on first launch. Once you allow it, it tiles every open window into
+the strip, and Cmd-Left and Cmd-Right stop reaching apps. Quit from the menu bar and every window
+goes back where it was.
+[Get started](https://shawntz.github.io/splay/start/) covers the first run, the two macOS settings
+Splay asks about, and how to remove it.
+
+<details>
+<summary>Build from source</summary>
+
+You need Xcode 26 or later.
 
 ```sh
 git clone https://github.com/shawntz/splay.git
@@ -65,11 +81,7 @@ scripts/bundle.sh
 open build/Splay.app
 ```
 
-Splay asks for Accessibility on first launch. Once you allow it, it tiles every open window into
-the strip, and Cmd-Left and Cmd-Right stop reaching apps. Quit from the menu bar and every window
-goes back where it was.
-[Get started](https://shawntz.github.io/splay/start/) covers the first run, the two macOS settings
-Splay asks about, and how to remove it.
+</details>
 
 ## Keys
 
@@ -114,7 +126,7 @@ run = 'column-width 0.66'
 ```
 
 Every command also runs from a terminal, a script or a bar such as SketchyBar, once the `splay`
-command is linked as [Get started](https://shawntz.github.io/splay/start/#build-from-source) shows:
+command is linked as [Get started](https://shawntz.github.io/splay/start/#install) shows:
 
 ```sh
 splay column-width 0.75

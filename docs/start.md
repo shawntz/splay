@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Get started
-description: What Splay is, how to build it from source, its first run and keys, using it next to Dinky, and how to remove it.
+description: What Splay is, how to install it, its first run and keys, using it next to Dinky, and how to remove it.
 permalink: /start/
 ---
 
@@ -52,10 +52,30 @@ Status: new. Splay is built for macOS 15 or later and developed on macOS 27.
   `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` set.
 - Accessibility permission. The first run asks.
 
+## Install
+
+Download [Splay.app.zip](https://github.com/shawntz/splay/releases/latest/download/Splay.app.zip),
+unzip it and drag Splay to Applications. Releases are signed and notarized, and
+run on Apple silicon and Intel. Splay offers each new version in the app, and
+Check for Updates is in its menu.
+
+To use the `splay` command, link it onto your `PATH`:
+
+```sh
+mkdir -p ~/.local/bin
+ln -sf /Applications/Splay.app/Contents/MacOS/splay ~/.local/bin/splay
+```
+
+If you ran a source build before, macOS still holds the Accessibility grant for
+that build's signature. Remove Splay from System Settings > Privacy & Security >
+Accessibility, or run `tccutil reset Accessibility com.shawnschwartz.splay`,
+then turn on the release.
+
 ## Build from source
 
-You build Splay from a checkout of its source. To update, quit Splay, build
-again and open it. A rebuild alone leaves the old one running, and `open` only
+Or build Splay from a checkout. A build has no update feed, so it never offers
+to replace itself with a release. To update a build, quit Splay, build again
+and open it. A rebuild alone leaves the old one running, and `open` only
 brings that one forward.
 
 ```sh
@@ -103,7 +123,8 @@ again.
 Splay moves windows and reads keys through Accessibility. Until it has the
 grant, a window says so and waits. Open Accessibility Settings goes to System
 Settings > Privacy & Security > Accessibility, where you turn Splay on, adding
-`build/Splay.app` with + if it isn't listed. The window moves on by itself
+`/Applications/Splay.app`, or `build/Splay.app` for a build, with + if it isn't
+listed. The window moves on by itself
 once Splay is allowed. Nothing is tiled before then, and Splay has no menu
 bar item yet, so closing the window quits it.
 
@@ -254,9 +275,10 @@ Splay turned off, so their windows don't animate against it, keep it off.
    or turn Splay off in System Settings > General > Login Items & Extensions.
 2. Quit Splay from its menu. Every window goes back. Before it has
    Accessibility it has no menu, so close its window, which quits it.
-3. Delete `build/Splay.app`, or wherever you keep it, and `~/.local/bin/splay`.
-4. Delete `~/.config/splay`, `~/Library/Application Support/splay` and
-   `~/Library/Logs/splay.log`, and run `defaults delete com.shawnschwartz.splay`.
+3. Delete `/Applications/Splay.app` or `build/Splay.app`, and `~/.local/bin/splay`.
+4. Delete `~/.config/splay`, `~/Library/Application Support/splay`,
+   `~/Library/Caches/com.shawnschwartz.splay` and `~/Library/Logs/splay.log`,
+   and run `defaults delete com.shawnschwartz.splay`.
 5. Remove Splay from System Settings > Privacy & Security > Accessibility, or
    run `tccutil reset Accessibility com.shawnschwartz.splay`. If you turned
    your terminal on there for `just run`, turn it off too.
