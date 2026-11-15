@@ -15,7 +15,7 @@ as it stands, and lists Dinky's releases.
 
 ## Unreleased
 
-What Splay changes from the Dinky it merges:
+The first release. What Splay adds to Dinky:
 
 - Scrolling is the default layout, and Cmd-Left and Cmd-Right focus left and
   right along the strip. Alt-H and Alt-L are left unbound.
