@@ -30,7 +30,7 @@ final class DinkyApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
     // Only a bundle carries the feed URL; a bare debug binary would otherwise show an "Unable to Check
     // For Updates" alert at launch that blocks the socket until dismissed.
     private let updater = SPUStandardUpdaterController(startingUpdater: Bundle.main.infoDictionary?["SUFeedURL"] != nil,
-                                                       updaterDelegate: nil, userDriverDelegate: nil)
+                                                       updaterDelegate: nil, userDriverDelegate: UpdaterUI.shared)
 
     func applicationDidFinishLaunching(_ note: Notification) {
         AppState.shared.loadConfig()
@@ -94,7 +94,7 @@ final class DinkyApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         let trouble = state.configError != nil || !otherTilers.isEmpty || !hotkeysActive
         guard let button = statusItem.button else { return }
-        let title = (workspace.map { "\($0)" } ?? "?") + (trouble ? "!" : "")
+        let title = (workspace.map { "\($0)" } ?? "?") + UpdaterUI.shared.reminder.titleMark + (trouble ? "!" : "")
         let disabled = !state.enabled
         // Only on change: every set redraws the status item, which kept dinky and WindowServer busy while idle.
         if button.title != title { button.title = title }
@@ -214,6 +214,7 @@ final class DinkyApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.addItem(.separator())
         // Only a bundle with a feed can update; a bare debug binary has neither.
         if Bundle.main.infoDictionary?["SUFeedURL"] != nil {
+            if let held = UpdaterUI.shared.menuItem(target: self, action: #selector(checkForUpdates(_:))) { menu.addItem(held) }
             let updates = NSMenuItem(title: "Check for Updates…", action: #selector(checkForUpdates(_:)), keyEquivalent: "")
             updates.target = self
             menu.addItem(updates)

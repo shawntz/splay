@@ -61,7 +61,8 @@ the niri and PaperWM idea on a Mac, with System Integrity Protection left on.
 
 Download [Splay.app.zip](https://github.com/shawntz/splay/releases/latest/download/Splay.app.zip),
 unzip it, drag Splay to Applications and open it. New versions are offered in the app, and Check
-for Updates is in its menu.
+for Updates is in its menu. When Splay finds one on its own, `↑` appears after the workspace number
+in the menu bar.
 
 Splay asks for Accessibility on first launch. Once you allow it, it tiles every open window into
 the strip, and Cmd-Left and Cmd-Right stop reaching apps. Quit from the menu bar and every window
@@ -198,7 +199,8 @@ scripts/sync-upstream.sh     # merge Dinky's latest, without committing
 ```
 
 [RELEASING.md](RELEASING.md) covers cutting a release. `Tools/DemoReel` renders the animations on
-this page from the layout engine.
+this page from the layout engine. `PLAN.md`, `RESEARCH.md`, `RESULTS.md`, `CHANGELOG.md` and
+`.tickets/` are Dinky's own working notes, kept unchanged so merges stay clean.
 
 ## Credits
 

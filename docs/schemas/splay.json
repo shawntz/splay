@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "urn:splay:config-schema",
+  "$id": "https://shawntz.github.io/splay/schemas/splay.json",
   "title": "splay configuration",
   "description": "~/.config/splay/splay.toml. Every key is optional; a key left out keeps its default.",
   "type": "object",

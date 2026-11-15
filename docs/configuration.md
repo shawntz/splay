@@ -19,12 +19,12 @@ file is left alone, with the read error shown in the menu.
 - Unknown keys are errors. A broken config does not load: the previous one
   stays and the error shows in the menu.
 - `splay doctor [--config <path>]` also checks commands, modes and key names.
-- The [JSON Schema](schemas/splay.json) gives completion in editors that read
-  Taplo's `#:schema` line, such as Zed or VS Code with Even Better TOML. This
-  site serves it, but the shipped config has no such line, so add one at the
-  top of your config,
-  `#:schema https://shawntz.github.io/splay/schemas/splay.json`, or point it at
-  your checkout with `#:schema file:///path/to/splay/docs/schemas/splay.json`.
+- The config Splay writes names the [JSON Schema](schemas/splay.json) on its
+  first line, `#:schema https://shawntz.github.io/splay/schemas/splay.json`.
+  Editors that read Taplo's `#:schema` line, such as Zed or VS Code with Even
+  Better TOML, validate and complete the file against it. Splay never rewrites
+  a config that exists, so one written by Splay 0.1 has no such line; add it at
+  the top by hand.
 
 ## Top level
 
@@ -588,9 +588,10 @@ and the bindings, which exist only because it spells them out, its values are
 the built-in defaults.
 
 ```toml
+#:schema https://shawntz.github.io/splay/schemas/splay.json
 # ~/.config/splay/splay.toml. Saved changes take effect at once.
 # A key you leave out keeps the value shown here.
-# Every command: `splay help`, or docs/commands.md in the source. Every key: docs/configuration.md.
+# Every command: `splay help`. Every key: https://shawntz.github.io/splay/configuration/
 
 start-at-login = false          # true starts splay when you log in
 workspaces = 5                  # across all displays, one native Space each

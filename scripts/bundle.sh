@@ -4,7 +4,8 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-VERSION="${VERSION:-0.1.0}"
+# 0.0 marks a build from source. Release packaging passes the real version.
+VERSION="${VERSION:-0.0}"
 BUILD="${BUILD:-$(git rev-list --count HEAD 2>/dev/null || echo 1)}"
 IDENTITY="${IDENTITY:-}"
 SIGN_FLAGS="${SIGN_FLAGS:-}"  # extra codesign flags, such as --options runtime

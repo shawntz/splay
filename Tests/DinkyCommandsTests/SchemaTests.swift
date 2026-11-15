@@ -6,9 +6,16 @@ import TOMLDecoder
 
 /// docs/schemas/splay.json is written by hand; these keep it from drifting away from the code.
 struct SchemaTests {
+    private static let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+
+    /// The schema's path under docs/, the site's source.
+    private static let schemaPath = "schemas/splay.json"
+
+    /// Where the site serves the schema, and what the default config's first line names.
+    private static let hostedURL = "https://shawntz.github.io/splay/schemas/splay.json"
+
     private static let schema: [String: Any] = {
-        let url = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-            .appending(path: "docs/schemas/splay.json")
+        let url = root.appending(path: "docs/" + schemaPath)
         return try! JSONSerialization.jsonObject(with: Data(contentsOf: url)) as! [String: Any]
     }()
 
@@ -188,8 +195,41 @@ struct SchemaTests {
         outer = 10
         """
 
+    @Test func `The default config names the hosted schema on its first line`() throws {
+        #expect(Config.defaultTOML.prefix { $0 != "\n" } == "#:schema \(Self.hostedURL)")
+        let url = try #require(URL(string: Self.hostedURL))
+        #expect(url.path().hasSuffix("/" + Self.schemaPath), "the site serves docs/\(Self.schemaPath), not \(url.path())")
+        // The site's address comes from docs/_config.yml, and the file's path under docs/ follows it.
+        let site = try String(contentsOf: Self.root.appending(path: "docs/_config.yml"), encoding: .utf8)
+        func setting(_ key: String) throws -> String {
+            let line = try #require(site.split(separator: "\n").first { $0.hasPrefix("\(key): ") }, "no \(key) in docs/_config.yml")
+            return line.dropFirst(key.count + 2).trimmingCharacters(in: .whitespaces)
+        }
+        #expect(try setting("url") + setting("baseurl") + "/" + Self.schemaPath == Self.hostedURL)
+        #expect(Self.schema["$id"] as? String == Self.hostedURL, "the schema's $id is where the site serves it")
+    }
+
+    /// The line is a TOML comment. A config written before it, with the line added at the top by hand, loads and
+    /// checks as before, the way `doctor --config` loads and checks it, and an error below the line names its own line.
+    @Test func `The schema line is a comment to the loader and doctor`() throws {
+        let line = "#:schema \(Self.hostedURL)\n"
+        let rest = String(Config.defaultTOML.drop { $0 != "\n" }.dropFirst())
+        #expect(try Config.parse(rest) == Config.default, "the default config means the same without the line")
+
+        let old = "workspaces = 3\n[mode.main]\nalt-h = 'focus left'\n"
+        let file = FileManager.default.temporaryDirectory.appending(path: "schema-line-\(UUID().uuidString).toml")
+        defer { try? FileManager.default.removeItem(at: file) }
+        try (line + old).write(to: file, atomically: true, encoding: .utf8)
+        let loaded = try Config.load(from: file)
+        #expect(try loaded == Config.parse(old))
+        #expect(try checkConfig(loaded) == checkConfig(Config.parse(old)))
+
+        let error = #expect(throws: ConfigError.self) { try Config.parse(line + "workspaces = 3\nsliver = 1\n") }
+        #expect(error?.path == "sliver")
+        #expect(error?.line == 3, "\(String(describing: error))")
+    }
+
     @Test func `Schema and config know every key`() throws {
-        #expect(!Config.defaultTOML.contains("#:schema"), "the schema is not hosted anywhere a #:schema line could name")
         for fixture in [Self.everyKey, Self.scalarGaps] {
             #expect(throws: Never.self) { try Config.parse(fixture) }
             try check(TOMLTable(source: fixture), Self.schema, at: "")

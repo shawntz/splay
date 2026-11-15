@@ -3,9 +3,10 @@
 
 extension Config {
     public static let defaultTOML = """
+    #:schema https://shawntz.github.io/splay/schemas/splay.json
     # ~/\(Brand.configPath). Saved changes take effect at once.
     # A key you leave out keeps the value shown here.
-    # Every command: `\(Brand.name) help`, or docs/commands.md in the source. Every key: docs/configuration.md.
+    # Every command: `\(Brand.name) help`. Every key: https://shawntz.github.io/splay/configuration/
 
     start-at-login = false          # true starts \(Brand.name) when you log in
     workspaces = 5                  # across all displays, one native Space each

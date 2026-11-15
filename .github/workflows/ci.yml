@@ -4,6 +4,8 @@ on:
   pull_request:
   push:
     branches: [main]
+  # A fork does not run workflows on push until its owner enables them, so allow a run by hand.
+  workflow_dispatch:
 
 permissions:
   contents: read

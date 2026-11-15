@@ -46,5 +46,6 @@ echo "==> Signing the update and writing the appcast"
 sign_update="$(find .build/artifacts -path '*/Sparkle/bin/sign_update' | head -1)"
 [[ -x "$sign_update" ]] || { echo 'sign_update not found under .build/artifacts' >&2; exit 1; }
 "$sign_update" --account "$account" -p dist/Splay.app.zip > dist/signature.txt
-python3 scripts/appcast.py "$version"
+# -E: appcast.py checks its inputs with assert, which PYTHONOPTIMIZE in the environment would skip.
+python3 -E scripts/appcast.py "$version"
 echo "==> dist/Splay.app.zip ($(du -h dist/Splay.app.zip | cut -f1)), version $version build $build"

@@ -13,6 +13,12 @@ https://shawntz.github.io/splay/changelog/.</p>
 Splay's releases. `CHANGELOG.md` in the source is upstream Dinky's, merged in
 as it stands, and lists Dinky's releases.
 
+## Unreleased
+
+- When Splay finds a new version on its own, it shows `↑` after the workspace number and an Update to Splay item in its menu, and keeps both until you install or skip the update. Before, the update window could open behind other windows.
+- A newly written config names Splay's schema on its first line, so editors with Taplo or Even Better TOML check and complete it with no setup. To get this in a config written by 0.1, add `#:schema https://shawntz.github.io/splay/schemas/splay.json` at the top.
+- A build from source reports version 0.0 and carries no update feed, so it never offers to replace itself with a release.
+
 ## 0.1
 
 The first release. What Splay adds to Dinky:

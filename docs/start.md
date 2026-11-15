@@ -57,7 +57,9 @@ Status: new. Splay is built for macOS 15 or later and developed on macOS 27.
 Download [Splay.app.zip](https://github.com/shawntz/splay/releases/latest/download/Splay.app.zip),
 unzip it and drag Splay to Applications. Releases are signed and notarized, and
 run on Apple silicon and Intel. Splay offers each new version in the app, and
-Check for Updates is in its menu.
+Check for Updates is in its menu. When Splay finds a new version on its own, it
+shows `↑` after the workspace number and adds Update to Splay, with the version,
+above Check for Updates. Choose it to see the update.
 
 To use the `splay` command, link it onto your `PATH`:
 
@@ -85,8 +87,8 @@ UNIVERSAL=1 scripts/bundle.sh    # one app for Apple silicon and Intel
 open build/Splay.app
 ```
 
-`splay version` prints the version, which is `0.1.0` unless you build with
-`VERSION` set, and the build number, the number of commits in the checkout.
+`splay version` prints the version, which is `0.0` for a build from source,
+and the build number, the number of commits in the checkout.
 Link the command line into `~/.local/bin`:
 
 ```sh

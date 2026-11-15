@@ -81,8 +81,8 @@ struct ManualTests {
             }
         }
         #expect(found.isEmpty, """
-            Splay's command and paths are spelled \(Brand.name), it has no site and no Homebrew tap, and its hook \
-            variables start with \(Brand.envPrefix):
+            Splay's command and paths are spelled \(Brand.name), its site is https://shawntz.github.io/splay/, it has \
+            no Homebrew tap, and its hook variables start with \(Brand.envPrefix):
             \(found.joined(separator: "\n"))
             """)
     }
