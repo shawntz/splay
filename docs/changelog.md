@@ -13,7 +13,7 @@ https://shawntz.github.io/splay/changelog/.</p>
 Splay's releases. `CHANGELOG.md` in the source is upstream Dinky's, merged in
 as it stands, and lists Dinky's releases.
 
-## Unreleased
+## 0.1
 
 The first release. What Splay adds to Dinky:
 
