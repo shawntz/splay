@@ -1,4 +1,5 @@
 import AppKit
+import DinkyConfig
 import DinkyPrivate
 
 // `dinky debug events` prints the WindowServer event stream with the model's view of each window until
@@ -9,7 +10,7 @@ func runDebug(_ args: [String]) -> Int32 {
         return result
     }
     guard args == ["events"] || args == ["windows"] else {
-        fputs("usage: dinky debug events|windows|ax-close <id>|ax-minimize <id>|ax-unminimize <id>|ax-frame <id> <x> <y> <w> <h>|hide-app <pid>|unhide-app <pid>\n", stderr)
+        fputs("usage: \(Brand.name) debug events|windows|ax-close <id>|ax-minimize <id>|ax-unminimize <id>|ax-frame <id> <x> <y> <w> <h>|hide-app <pid>|unhide-app <pid>\n", stderr)
         return 64
     }
     let model = WindowModel()

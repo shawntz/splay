@@ -1,0 +1,17 @@
+{%- comment -%}
+  A demo animation from docs/assets/demo/: include.name is strip, widths, versus or workspaces.
+  include.label describes it for screen readers, include.caption follows the standard line.
+  Without JavaScript, or with reduced motion, it shows its poster with controls and does not play.
+{%- endcomment -%}
+{%- assign base = '/assets/demo/' | append: include.name -%}
+<figure class="demo{% if include.class %} {{ include.class }}{% endif %}">
+  <div class="demo-frame">
+    <video data-autoplay muted loop playsinline controls preload="none" width="1920" height="1200"
+      poster="{{ base | append: '-poster.png' | relative_url }}"
+      aria-label="{{ include.label | escape }}">
+      <source src="{{ base | append: '.mp4' | relative_url }}" type="video/mp4">
+      <img src="{{ base | append: '.gif' | relative_url }}" alt="{{ include.label | escape }}" width="960" height="600" loading="lazy">
+    </video>
+  </div>
+  <figcaption>{{ include.caption }} Rendered from Splay's layout engine. Window contents are placeholders.</figcaption>
+</figure>

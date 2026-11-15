@@ -4,6 +4,13 @@ import PackageDescription
 let package = Package(
     name: "dinky",
     platforms: [.macOS(.v15)],
+    // Only for Tools/DemoReel, a separate package that renders the demo animations from the layout engine.
+    // The app does not use these; `swift build` here builds every target whether listed or not.
+    products: [
+        .library(name: "DinkyLayout", targets: ["DinkyLayout"]),
+        .library(name: "DinkyConfig", targets: ["DinkyConfig"]),
+        .library(name: "DinkyCommands", targets: ["DinkyCommands"]),
+    ],
     dependencies: [
         .package(url: "https://github.com/dduan/TOMLDecoder", exact: "0.4.4"),
         .package(url: "https://github.com/sparkle-project/Sparkle", exact: "2.9.6"),

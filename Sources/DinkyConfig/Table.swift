@@ -139,3 +139,21 @@ private func lineNumber(in error: Error) -> Int? {
     guard let range = text.range(of: #"(?<=\(Line )\d+"#, options: .regularExpression) else { return nil }
     return Int(text[range])
 }
+
+extension Table {
+    /// A list of numbers, e.g. column widths.
+    func doubles(_ key: String) throws -> [Double]? {
+        guard use(key) else { return nil }
+        let wrong = ConfigError(path: path(key), "expected a list of numbers")
+        guard let array = try? table.array(forKey: key) else { throw wrong }
+        var numbers: [Double] = []
+        for index in 0..<array.count {
+            // Whole numbers as integers: TOMLDecoder refuses a bare 0 as a float.
+            guard let number = (try? array.integer(atIndex: index)).map(Double.init) ?? (try? array.float(atIndex: index)) else {
+                throw wrong
+            }
+            numbers.append(number)
+        }
+        return numbers
+    }
+}

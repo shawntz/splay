@@ -1,11 +1,13 @@
 name: Deploy documentation
 
+# Builds docs/ with GitHub's Jekyll and publishes it at https://shawntz.github.io/splay/.
+# Turn it on once under Settings > Pages > Build and deployment, with Source set to GitHub Actions.
+
 on:
   push:
     branches: [main]
     paths:
       - docs/**
-      - CHANGELOG.md
       - .github/workflows/pages.yml
   workflow_dispatch:
 
@@ -24,11 +26,6 @@ jobs:
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
       - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
-      # The released sections of CHANGELOG.md, without its title or anything still unreleased.
-      - name: Include the changelog
-        run: |
-          mkdir -p docs/_includes
-          awk '/^# /{next} /^## /{skip = ($0 == "## Unreleased")} !skip' CHANGELOG.md > docs/_includes/changelog.md
       - uses: actions/jekyll-build-pages@44a6e6beabd48582f863aeeb6cb2151cc1716697 # v1
         with:
           source: ./docs

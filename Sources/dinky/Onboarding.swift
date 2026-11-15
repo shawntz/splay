@@ -1,4 +1,5 @@
 import AppKit
+import DinkyConfig
 import ServiceManagement
 
 // First-run flow. Step 1 waits for Accessibility, which dinky needs to move windows and to install its
@@ -27,9 +28,14 @@ final class Onboarding: NSObject {
     // MARK: Step 1, Accessibility
 
     private func showAccessibilityStep() {
-        show(title: "dinky needs Accessibility",
-             text: "dinky moves and tiles windows through the Accessibility API. Turn dinky on under "
-                 + "Privacy & Security, Accessibility. This window moves on by itself once it is allowed.",
+        // macOS holds a process started from a terminal or another app to that app's grant, not to its own.
+        let whose = heldToOwnGrant() ? "Turn \(Brand.displayName) on"
+            : "It was started from \(grantHolderName() ?? "a terminal or another app"), and macOS counts that app's grant, "
+                + "so turn that app on"
+        show(title: "\(Brand.displayName) needs Accessibility",
+             text: "\(Brand.displayName) moves and tiles windows through the Accessibility API. \(whose) under "
+                 + "Privacy & Security, Accessibility. This window moves on by itself once it is allowed. "
+                 + "Closing it quits \(Brand.displayName).",
              buttons: [button("Open Accessibility Settings", #selector(openAccessibility))])
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             guard let self, self.isTrusted() else { return }
@@ -51,8 +57,8 @@ final class Onboarding: NSObject {
     private func showSwooshStep() {
         show(title: "Faster Cmd-Tab",
              text: "macOS's \"When switching to an application, switch to a Space with open windows\" setting "
-                 + "slides slowly to the app's Space on Cmd-Tab. With it off, dinky can follow the switch instantly while enabled. "
-                 + "This stays off after dinky quits. To switch Spaces without dinky, turn it back on in "
+                 + "slides slowly to the app's Space on Cmd-Tab. With it off, \(Brand.displayName) can follow the switch instantly while enabled. "
+                 + "This stays off after \(Brand.displayName) quits. To switch Spaces without \(Brand.displayName), turn it back on in "
                  + "System Settings > Desktop & Dock > Mission Control. Turning it off restarts the Dock.",
              buttons: [button("Turn It Off", #selector(turnOffSwoosh)), button("Leave It", #selector(leaveSwoosh))])
     }
@@ -98,8 +104,9 @@ final class Onboarding: NSObject {
 
         if window == nil {
             let w = NSWindow(contentRect: .zero, styleMask: [.titled, .closable], backing: .buffered, defer: false)
-            w.title = "dinky"
+            w.title = Brand.displayName
             w.isReleasedWhenClosed = false
+            w.delegate = self
             window = w
         }
         window?.contentView = stack
@@ -112,6 +119,14 @@ final class Onboarding: NSObject {
     private func close() {
         window?.close()
         window = nil
+    }
+}
+
+extension Onboarding: NSWindowDelegate {
+    /// Still waiting for Accessibility, there is no menu bar item to quit from, and the grant coming later would
+    /// start the tiling with nothing on screen to say why. So closing the window then quits.
+    func windowWillClose(_ notification: Notification) {
+        if timer?.isValid == true { NSApp.terminate(nil) }
     }
 }
 

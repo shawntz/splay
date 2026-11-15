@@ -4,11 +4,11 @@ import DinkyConfig
 import TOMLDecoder
 @testable import DinkyCommands
 
-/// docs/schemas/dinky.json is written by hand; these keep it from drifting away from the code.
+/// docs/schemas/splay.json is written by hand; these keep it from drifting away from the code.
 struct SchemaTests {
     private static let schema: [String: Any] = {
         let url = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-            .appending(path: "docs/schemas/dinky.json")
+            .appending(path: "docs/schemas/splay.json")
         return try! JSONSerialization.jsonObject(with: Data(contentsOf: url)) as! [String: Any]
     }()
 
@@ -88,6 +88,9 @@ struct SchemaTests {
 
         [scrolling]
         column-width = 0.5
+        center-focused-column = 'on-overflow'
+        preset-column-widths = [0.25, 0.5, 0.75]
+        peek = 10
 
         [master]
         size = 0.55
@@ -186,7 +189,7 @@ struct SchemaTests {
         """
 
     @Test func `Schema and config know every key`() throws {
-        #expect(Config.defaultTOML.hasPrefix("#:schema \(Self.schema["$id"] as! String)\n"))
+        #expect(!Config.defaultTOML.contains("#:schema"), "the schema is not hosted anywhere a #:schema line could name")
         for fixture in [Self.everyKey, Self.scalarGaps] {
             #expect(throws: Never.self) { try Config.parse(fixture) }
             try check(TOMLTable(source: fixture), Self.schema, at: "")

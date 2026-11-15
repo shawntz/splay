@@ -1,4 +1,5 @@
 import AppKit
+import DinkyConfig
 import DinkyLayout
 import DinkyPrivate
 
@@ -29,7 +30,7 @@ final class FrameApplier {
     private let minimumsURL: URL
 
     init(supportURL: URL = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        .appendingPathComponent("dinky")) {
+        .appendingPathComponent(Brand.supportFolder)) {
         minimumsURL = supportURL.appendingPathComponent("learned-minimum-sizes.json")
         // Saved before minimums needed two different sizes asked: Terminal's grid could pass for one there.
         try? FileManager.default.removeItem(at: supportURL.appendingPathComponent("minimum-sizes.json"))

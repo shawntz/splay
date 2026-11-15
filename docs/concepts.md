@@ -5,6 +5,9 @@ description: Workspaces, windows, the tree, displays, rules and modes. The nouns
 permalink: /concepts/
 ---
 
+<p class="github-only">This page is part of Splay's manual. Read it with its figures and navigation at
+https://shawntz.github.io/splay/concepts/.</p>
+
 # Concepts
 
 Seven nouns. The rest of the manual is verbs.
@@ -12,7 +15,7 @@ Seven nouns. The rest of the manual is verbs.
 ## Workspace
 
 A numbered native Space. `workspaces = 5` gives you 1 to 5 across every display,
-and `workspace 3` switches there in about 70 ms. Each workspace has its own
+and `workspace 3` switches there. Each workspace has its own
 [layout](layouts.md).
 
 <figure class="wide">
@@ -44,7 +47,9 @@ of its width `fullscreen-width` gives it; it is not macOS full screen. Dialogs, 
 ## Tree
 
 A tiled workspace is a tree. Containers lay their children along one axis, as
-tiles or as an accordion. The leaves are windows.
+tiles or as an accordion. The leaves are windows. In the default
+[scrolling layout](layouts.md#scrolling) the root is the strip, and its
+children are the columns.
 
 <figure>
 {% include figures/tree.svg %}
@@ -64,7 +69,7 @@ mode and axis. `flatten-workspace-tree` starts over from the config.
 ## Display
 
 A display is matched by pattern: `main`, `secondary`, or part of its name as
-`dinky list-displays` prints it. Patterns choose where a workspace lives, a
+`splay list-displays` prints it. Patterns choose where a workspace lives, a
 display's gaps, and a workspace's layout while it is on that display.
 
 ```toml
@@ -81,7 +86,8 @@ layout = 'accordion'
 ## Focus
 
 One window has focus, and its border says so. `focus left` and friends move it
-to the nearest window that way; with `--boundaries all-monitors-outer-frame`,
+to the nearest window that way, or in the strip to the window last focused in
+the column that way; with `--boundaries all-monitors-outer-frame`,
 across the display edge too. [`[focus-follows-mouse]`](configuration.md#focus-follows-mouse)
 moves it with the pointer instead. When the focused window closes or is minimized
 and macOS leaves no key window, focus goes to its workspace's next tile. A close
@@ -105,7 +111,7 @@ trigger close/minimize repair.
 Known limits on macOS 27: when departure ownership cannot be established, a same-app
 cross-display close redirect and a close through a discard sheet or alert are left
 alone. The separate alert can own the key window rather than its document. Focus
-stays where macOS put it; dinky does not infer ownership from an unconfirmed focus
+stays where macOS put it; Splay does not infer ownership from an unconfirmed focus
 loss.
 
 ## Rule
@@ -122,7 +128,7 @@ run = ['layout floating', 'move-window-to-workspace 5']
 
 ## Mode
 
-Key bindings live in modes, one active at a time. dinky starts in `main`.
+Key bindings live in modes, one active at a time. Splay starts in `main`.
 `mode service` switches to the bindings in `[mode.service]` until a binding
 there switches back.
 

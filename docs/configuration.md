@@ -1,13 +1,16 @@
 ---
 layout: default
 title: Configuration
-description: dinky's TOML config, every key and its default, and the key syntax.
+description: Splay's TOML config, every key and its default, and the key syntax.
 permalink: /configuration/
 ---
 
+<p class="github-only">This page is part of Splay's manual. Read it with its figures and navigation at
+https://shawntz.github.io/splay/configuration/.</p>
+
 # Configuration
 
-`~/.config/dinky/dinky.toml`, written on first run and reloaded on save. A
+`~/.config/splay/splay.toml`, written on first run and reloaded on save. A
 symlink is followed, and replacing the link reloads too; a link to a missing
 file is left alone, with the read error shown in the menu.
 
@@ -15,9 +18,13 @@ file is left alone, with the read error shown in the menu.
   `[mode.main]` there are no bindings, without `[[rules]]` no rules.
 - Unknown keys are errors. A broken config does not load: the previous one
   stays and the error shows in the menu.
-- `dinky doctor [--config <path>]` also checks commands, modes and key names.
-- The [JSON Schema](schemas/dinky.json) gives completion in editors that read
-  Taplo's `#:schema` line, such as Zed or VS Code with Even Better TOML.
+- `splay doctor [--config <path>]` also checks commands, modes and key names.
+- The [JSON Schema](schemas/splay.json) gives completion in editors that read
+  Taplo's `#:schema` line, such as Zed or VS Code with Even Better TOML. This
+  site serves it, but the shipped config has no such line, so add one at the
+  top of your config,
+  `#:schema https://shawntz.github.io/splay/schemas/splay.json`, or point it at
+  your checkout with `#:schema file:///path/to/splay/docs/schemas/splay.json`.
 
 ## Top level
 
@@ -25,10 +32,10 @@ file is left alone, with the read error shown in the menu.
 
 | Key | Default | |
 |---|---|---|
-| `start-at-login` | `true` | Register as a login item. |
-| `workspaces` | `5` | Workspaces across all displays, one native Space each. dinky creates and removes Spaces to match. |
+| `start-at-login` | `false` | Register as a login item. Set back to `false` and saved while Splay runs, it removes the item. |
+| `workspaces` | `5` | Workspaces across all displays, one native Space each. Splay creates and removes Spaces to match. |
 | `follow-space-order` | `false` | Set `true` to renumber workspaces when you reorder Spaces in Mission Control: on each display the leftmost Space becomes its lowest-numbered workspace, and windows stay where they are. Left `false`, a workspace keeps its number, and the next arrangement (a config reload, a display change, a Space removed) moves its windows back to that number's place. |
-| `default-layout` | `'tiles'` | `'tiles'` (the existing dwindle layout), `'dwindle'`, `'accordion'`, `'fixed'`, `'scrolling'`, or `'master'`. |
+| `default-layout` | `'scrolling'` | `'scrolling'`, `'tiles'` (the dwindle layout, Dinky's default), `'dwindle'`, `'accordion'`, `'fixed'`, or `'master'`. See [Layouts](layouts.md). |
 | `default-tiling` | `true` | Set `false` to leave workspaces untiled unless overridden. |
 | `follow-app-activation` | `true` | Cmd-Tab and Dock clicks switch Spaces the fast way. Needs the macOS "switch to a Space with open windows" setting off. Write it as a [`[follow-app-activation]`](#follow-app-activation) table to leave some apps unfollowed. |
 | `float-windows-without-fullscreen` | `true` | Float windows that can't go full screen, such as Finder's copy progress, About This Mac and Calculator. Terminals and editors that can hide their title bar still tile. A `layout tiling` rule tiles a window anyway. |
@@ -48,9 +55,9 @@ the current order.
 ## `[follow-app-activation]`
 
 The table form of `follow-app-activation`, in place of the top-level line.
-Following works only while dinky is running and enabled. Turning it off does
+Following works only while Splay is running and enabled. Turning it off does
 not restore macOS's persistent Space-switching preference; see
-[First run](index.md#first-run) to restore switching without dinky.
+[First run](start.md#first-run) to restore switching without Splay.
 
 <div class="wide-table" markdown="1">
 
@@ -137,46 +144,65 @@ numbering starts at 1.
 
 ## Scrolling
 
-`layout = 'scrolling'` lays a workspace out as a row of columns that runs past
-the edges of the display, as niri and Hyprland's scrolling layout do. Each new
-window opens as a column right of the focused one, `column-width` wide whatever
-the number of columns. A lone column fills the display; columns that fit are
-centred; focusing a column scrolls just far enough to show it whole.
+The default layout. `layout = 'scrolling'` lays a workspace out as a row of
+columns that runs past the edges of the display, as niri and Hyprland's
+scrolling layout do. Each new window opens as a column right of the focused
+one, `column-width` wide whatever the number of columns. A lone column fills
+the display; columns that fit are centred; focusing a column scrolls just far
+enough to show it whole, unless `center-focused-column` centres it.
 
 macOS can't hide part of another app's window, so a column scrolled out of view
-is parked: it hangs off the display edge with a sliver of at least 25 points
-left on, an inner gap from the columns in view. Where another display sits beyond that edge, the column stops
-at the border instead and waits behind the columns in view.
+is parked: it hangs off the display edge with `peek` points left on, 25 by
+default, an inner gap from the columns in view. Where another display sits
+beyond that edge, the column stops at the border instead and waits behind the
+columns in view.
 
-Commands work on columns. `focus left` and `right` move between columns, `up`
-and `down` within one. `move left` and `right` swap the column with its
+Commands work on columns. `focus left` and `right` move between columns,
+landing on the window last focused in the column, and `up` and `down` move
+within one. `move left` and `right` swap the column with its
 neighbour, or take a window that shares its column out into a new column.
 `join-with left` and `right` put the window into the neighbouring column.
 `resize width` (and `smart`) changes the column's width, `resize height` the
 window's share of its column; `balance-sizes` resets them all. Hover focus
 leaves columns that are not wholly in view alone; a click scrolls to them.
+`center-column`, `column-width`, `maximize-column` and `focus-column` are the
+strip's own; see [Layouts](layouts.md#scrolling).
+
+Another column closing or changing width leaves the focused column where it is
+on screen, as far as the ends of the strip let it. Windows already open when
+Splay starts go into the strip left to right as they stand on screen.
 
 ```toml
-[workspace.1]
-layout = 'scrolling'
+[workspace.3]
+layout = 'dwindle'      # this workspace as a tree instead
 ```
 
-`workspace-layout scrolling` switches the focused window's workspace to
-scrolling on the fly, and `workspace-layout dwindle` switches it back to its
-tree. The switch holds until you switch again, so
-`workspace-layout dwindle scrolling` toggles. In a scrolling workspace,
-`layout tiles` and `layout accordion` set the focused window's column, so they
-do nothing while it holds one window.
+`workspace-layout dwindle` switches the focused window's workspace to a tree on
+the fly: the one its config gives it, or tiles when the config gives scrolling
+or master, as the default gives scrolling. `workspace-layout scrolling` switches
+it back. The switch holds until you switch again, so
+`workspace-layout dwindle scrolling` toggles.
+In a scrolling workspace, `layout tiles` and `layout accordion` set the focused
+window's column, so they do nothing while it holds one window.
 
 ## `[scrolling]`
+
+One table for every scrolling workspace, on every display.
 
 <div class="wide-table" markdown="1">
 
 | Key | Default | |
 |---|---|---|
 | `column-width` | `0.49` | A new column's width, as a share of the display inside the outer gaps, from `0.1` to `1`. Omarchy's `0.49` fits two columns side by side. |
+| `center-focused-column` | `'never'` | When focusing a column centres it on the display. `'never'` scrolls as little as shows it whole. `'always'` centres every column focus goes to, so an end column can leave empty space beside it. `'on-overflow'` centres a column only when it would not fit in view beside its neighbour on the side focus came from, as niri does. |
+| `preset-column-widths` | `[0.33333, 0.5, 0.66667]` | The shares `column-width next` and `prev` step through, in any order, each from `0.1` to `1`. A width within `0.015` of a preset counts as that preset, so `next` takes a `0.49` column to two thirds. `[]` turns them off. |
+| `peek` | `25` | Points of a parked window left on screen, from `1` to `100`. The columns keep an inner gap clear of it, so a larger peek leaves them less room. macOS pulls a window that is wholly off screen back into view, so it can't be `0`. |
 
 </div>
+
+A column that `center-column` centres stays centred while focus stays in it,
+as one `'on-overflow'` centres does: through resizes, other columns closing, and
+display or gap changes. Focusing another column ends it.
 
 ## Master
 
@@ -206,9 +232,10 @@ accordion running top to bottom, whichever window is focused, so
 closed.
 
 `workspace-layout master` switches the focused window's workspace to the master
-layout on the fly, and `workspace-layout dwindle` switches it back to its tree:
+layout on the fly, and `workspace-layout dwindle` switches it to its tree:
 the one its config gives it, or tiles. The windows keep the stack's mode, so an
-accordion stack comes back as an accordion whatever the config says. The switch
+accordion stack comes back as an accordion whatever the config says.
+`workspace-layout scrolling` puts it back in the strip. The switch
 holds until you switch again, so `workspace-layout dwindle master` toggles.
 
 `swap-with-master` swaps the focused window with the master, or the master with
@@ -264,7 +291,7 @@ its own.
 
 Which display a workspace lives on, by number. A display pattern is `main`,
 `secondary` (the other one, when there are two), or part of the name from
-`dinky list-displays`. A list tries each in turn. Unlisted workspaces, and
+`splay list-displays`. A list tries each in turn. Unlisted workspaces, and
 listed ones whose display isn't connected, live on the main display.
 
 ```toml
@@ -273,7 +300,7 @@ listed ones whose display isn't connected, live on the main display.
 4 = ['dell', 'lg']
 ```
 
-When a display comes or goes, dinky moves the workspace's windows, layout
+When a display comes or goes, Splay moves the workspace's windows, layout
 included, to a Space on its display and removes the Space left behind. Empty
 leftover Spaces are removed; ones with windows are left alone, unnumbered. A
 display with no workspaces keeps one unnumbered Space. Windows macOS piles onto
@@ -329,7 +356,7 @@ fullscreen-width = 0.55
 
 With `enabled = true`, the trackpad swipe that switches Spaces also moves focus
 between a tiled workspace's windows: scrolling columns, accordion children or tiles.
-In `'instant'` mode on macOS before 27, dinky keeps the swipe from the Dock and
+In `'instant'` mode on macOS before 27, Splay keeps the swipe from the Dock and
 switches Space only past the last window. In `'native'` mode, macOS receives the
 whole swipe: a short swipe can move focus, and a full, quick swipe can both move
 focus and switch Space, even before the last window.
@@ -345,11 +372,11 @@ To turn off the down swipe's App Exposé action, use **System
 Settings › Trackpad › More Gestures › App Exposé**. Mission Control keeps the
 swipe up.
 
-dinky reads the swipe from the Dock's private events, as it already switches
+Splay reads the swipe from the Dock's private events, as it already switches
 Spaces with them, so a macOS update can break it. This feature is off by default.
-On macOS 27 and later, `'instant'` falls back to `'native'`: dinky does not suppress
+On macOS 27 and later, `'instant'` falls back to `'native'`: Splay does not suppress
 swipes with attached IOHID payloads. Each swipe moves at most one window.
-On a workspace with one window or none tiled, or while dinky is disabled, the
+On a workspace with one window or none tiled, or while Splay is disabled, the
 swipe is macOS's own.
 
 <div class="wide-table" markdown="1">
@@ -386,7 +413,7 @@ before dropping, or with a key like `split-trigger = 'ctrl'`, hold that key,
 and it splits that tile instead: the outline shrinks to the half the pointer is
 in, left, right, top or bottom, and the window lands there. The fixed, master
 and scrolling layouts only swap.
-While dinky is off, dragging neither swaps nor resizes tiles and shows no drop
+While Splay is off, dragging neither swaps nor resizes tiles and shows no drop
 outlines.
 
 <div class="wide-table" markdown="1">
@@ -403,7 +430,7 @@ outlines.
 
 Which key of each modifier pair a binding's modifier means. Limit `alt` to one
 side and the other Option key types special characters as usual: with
-`alt = 'left'`, left Option-h focuses left and right Option-h types `˙`.
+`alt = 'left'`, left Option-j focuses down and right Option-j types `∆`.
 
 <div class="wide-table" markdown="1">
 
@@ -425,16 +452,16 @@ environment `exec-and-forget` gets.
 
 | Key | Runs |
 |---|---|
-| `startup` | Once, after dinky has read the windows and displays. |
-| `workspace-changing` | When a dinky switch starts, before it lands, and again when a burst of switches changes the target. |
+| `startup` | Once, after Splay has read the windows and displays. |
+| `workspace-changing` | When a Splay switch starts, before it lands, and again when a burst of switches changes the target. |
 | `workspace-changed` | When a display's workspace changes, or a switch gives up. With `follow-space-order`, also when a reorder renumbers a display's workspaces, even if the number it shows stays the same, so a bar listing workspaces redraws. |
 | `focus-changed` | When focus changes, debounced 50 ms. |
-| `mode-changed` | When the binding mode changes, including back to `main` when the config reloads. Sets `DINKY_MODE` and `DINKY_PREV_MODE`. |
-| `display-changed` | When a display connects or disconnects, once the displays have settled and dinky has moved the workspaces to them, about a second later. Sets `DINKY_DISPLAYS` and `DINKY_PREV_DISPLAYS`, how many displays there are now and were before. |
+| `mode-changed` | When the binding mode changes, including back to `main` when the config reloads. Sets `SPLAY_MODE` and `SPLAY_PREV_MODE`. |
+| `display-changed` | When a display connects or disconnects, once the displays have settled and Splay has moved the workspaces to them, about a second later. Sets `SPLAY_DISPLAYS` and `SPLAY_PREV_DISPLAYS`, how many displays there are now and were before. |
 
 </div>
 
-During a dinky switch, `workspace-changed` reports the destination or where the switch
+During a Splay switch, `workspace-changed` reports the destination or where the switch
 gives up, not intermediate Spaces. A reorder during the switch is included in that
 final notification.
 
@@ -444,14 +471,17 @@ Every rule whose conditions all match a new window runs, in order. Dialogs,
 sheets, panels and fixed-size windows always float. Windows that can't go full
 screen float too while `float-windows-without-fullscreen` is on, unless a
 `layout tiling` rule tiles them. A window an app keeps above all others, like a
-browser's picture-in-picture, is left alone and never takes dinky's focus.
+browser's picture-in-picture, is left alone and never takes Splay's focus.
 
 A rule that is exactly `layout floating` or `layout tiling` decides before the
 window is placed, the last one winning. Every other rule command runs once the
-window is placed, on that window.
+window is placed. `layout`, `workspace-layout`, `move-window-to-workspace`,
+`move-window-to-display` and the [strip's commands](commands.md#the-strip) act
+on that window. The rest, such as `move`, `resize` and `fullscreen`, act on the
+window that has focus then, which a new window usually is.
 
 New windows that have not yet exposed their Accessibility window or resize
-capability get up to a second to settle before dinky decides. This lets Finder
+capability get up to a second to settle before Splay decides. This lets Finder
 folders opened from the Desktop tile normally. Rules run once, after that wait;
 fixed-size windows still float. A `layout floating` or `layout tiling` command
 during the wait is remembered and takes precedence over the rule's layout choice.
@@ -510,7 +540,7 @@ reloading the config does not reclassify an existing window.
 Discover identifiers with:
 
 ```sh
-dinky list-windows --all --format '%{app-name} | %{window-id} | %{window-identifier}'
+splay list-windows --all --format '%{app-name} | %{window-id} | %{window-identifier}'
 ```
 
 `debug-state` also includes `window-identifier` for each window. These values
@@ -522,11 +552,12 @@ usual floating behavior.
 
 ## `[mode.<name>]`
 
-Key bindings. dinky starts in `main`; `mode <name>` switches. Each key maps to
+Key bindings. Splay starts in `main`; `mode <name>` switches. Each key maps to
 a command or a list of commands. Bound keys are swallowed. A key can also map
 to a table with `command` and `exclude-apps`, a list of bundle IDs: while one
-of those apps is frontmost, dinky leaves the key to it. Terminals that use
-`ctrl-hjkl` for their own panes keep it that way.
+of those apps is frontmost, Splay leaves the key to it. Terminals that use
+`ctrl-hjkl` for their own panes keep it that way, and an app can get
+[Cmd-Left and Cmd-Right](start.md#keys) back the same way.
 
 ```toml
 [mode.main]
@@ -552,16 +583,19 @@ The default `alt-` bindings take over Option-letter characters; set
 
 ## Default config
 
-```toml
-#:schema https://dinky.rodeo/schemas/dinky.json
-# ~/.config/dinky/dinky.toml. Saved changes take effect at once.
-# A key you leave out keeps the value shown here.
-# Every key and command: https://dinky.rodeo/configuration/
+What Splay writes on first run, when there is no config. Apart from the rule
+and the bindings, which exist only because it spells them out, its values are
+the built-in defaults.
 
-start-at-login = true
+```toml
+# ~/.config/splay/splay.toml. Saved changes take effect at once.
+# A key you leave out keeps the value shown here.
+# Every command: `splay help`, or docs/commands.md in the source. Every key: docs/configuration.md.
+
+start-at-login = false          # true starts splay when you log in
 workspaces = 5                  # across all displays, one native Space each
 follow-space-order = false      # true renumbers workspaces when you reorder Spaces in Mission Control
-default-layout = 'tiles'        # tiles (dwindle) | dwindle | accordion | fixed | scrolling | master
+default-layout = 'scrolling'    # scrolling | tiles (dwindle) | dwindle | accordion | fixed | master
 default-tiling = true           # false leaves workspaces untiled unless overridden
 follow-app-activation = true    # Cmd-Tab and Dock clicks switch Spaces the fast way
 float-windows-without-fullscreen = true   # progress windows, About, Calculator and the like float
@@ -591,6 +625,9 @@ orientation = 'auto'            # auto: run along the container's longer side | 
 
 [scrolling]
 column-width = 0.49             # a new column's share of the display; a lone column fills it
+center-focused-column = 'never' # centre the focused column: never | always | on-overflow (when it won't fit beside the one before)
+preset-column-widths = [0.33333, 0.5, 0.66667]   # what column-width next and prev step through; [] for none
+peek = 25                       # points of a scrolled-out window left on screen
 
 [master]
 size = 0.6                      # the master's share of the display beside the stack; alone it fills it
@@ -600,7 +637,7 @@ side = 'left'                   # left | right | center: the master's side
 inner = 8                       # or { horizontal = 8, vertical = 8 }
 outer = 8                       # or { top = 8, bottom = 8, left = 8, right = 8 }
 
-# Display patterns: main, secondary, or part of a name as `dinky list-displays` prints it.
+# Display patterns: main, secondary, or part of a name as `splay list-displays` prints it.
 # A workspace lives on the first display its patterns match, else on the main display.
 # [workspace-to-display]
 # 5 = 'secondary'
@@ -647,9 +684,9 @@ ctrl = 'both'
 cmd = 'both'
 shift = 'both'
 
-# dinky commands run on events. exec-and-forget gets $DINKY_WORKSPACE, $DINKY_PREV_WORKSPACE and $DINKY_DISPLAY
-# in the workspace hooks, $DINKY_MODE, $DINKY_PREV_MODE in mode-changed, and $DINKY_DISPLAYS,
-# $DINKY_PREV_DISPLAYS (how many displays) in display-changed.
+# splay commands run on events. exec-and-forget gets $SPLAY_WORKSPACE, $SPLAY_PREV_WORKSPACE and $SPLAY_DISPLAY
+# in the workspace hooks, $SPLAY_MODE, $SPLAY_PREV_MODE in mode-changed, and $SPLAY_DISPLAYS,
+# $SPLAY_PREV_DISPLAYS (how many displays) in display-changed.
 # [hooks]
 # startup = ['exec-and-forget brew services restart sketchybar']
 # workspace-changed = ['exec-and-forget sketchybar --trigger workspace_change']
@@ -684,10 +721,8 @@ alt-shift-7 = 'move-window-to-workspace 7'
 alt-shift-8 = 'move-window-to-workspace 8'
 alt-shift-9 = 'move-window-to-workspace 9'
 alt-tab = 'workspace-back-and-forth'
-alt-h = 'focus left'
 alt-j = 'focus down'
 alt-k = 'focus up'
-alt-l = 'focus right'
 alt-shift-h = 'move left'
 alt-shift-j = 'move down'
 alt-shift-k = 'move up'
@@ -700,6 +735,19 @@ alt-comma = 'layout accordion'
 alt-slash = 'layout tiles'
 alt-shift-n = 'move-window-to-display next'
 alt-shift-semicolon = 'mode service'
+# Cmd-Left and Cmd-Right walk the strip, so apps no longer get them: line start and end in text fields,
+# where Ctrl-A and Ctrl-E still work. To leave them to some apps, list their bundle IDs:
+# cmd-left = { command = 'focus left', exclude-apps = ['bundle.id'] }
+# alt-h and alt-l are left unbound, so Option-H and Option-L still reach apps and other tools.
+cmd-left = 'focus left'
+cmd-right = 'focus right'
+# The strip: its first and last column, the focused column's preset widths, centring and maximising it.
+cmd-home = 'focus-column first'
+cmd-end = 'focus-column last'
+alt-r = 'column-width next'
+alt-shift-r = 'column-width prev'
+alt-c = 'center-column'
+alt-m = 'maximize-column'
 
 [mode.service]
 esc = ['reload-config', 'mode main']

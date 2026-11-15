@@ -6,10 +6,10 @@ struct ConfigTests {
     @Test func `Default config loads`() throws {
         let config = try Config.parse(Config.defaultTOML)
         #expect(config == Config.default)
-        #expect(config.startAtLogin)
+        #expect(!config.startAtLogin)
         #expect(config.workspaces == 5)
         #expect(!config.followSpaceOrder)
-        #expect(config.defaultLayout == .tiles)
+        #expect(config.defaultLayout == .scrolling)
         #expect(config.defaultTiling)
         #expect(config.followAppActivation == FollowAppActivation())
         #expect(config.floatWindowsWithoutFullscreen)
@@ -32,7 +32,7 @@ struct ConfigTests {
         #expect(try main[KeyCombo("alt-k")]?.commands == ["focus up"])
         #expect(try main[KeyCombo("alt-shift-l")]?.commands == ["move right"])
         #expect(try main[KeyCombo("alt-shift-semicolon")]?.commands == ["mode service"])
-        #expect(main.count == 37)
+        #expect(main.count == 43)
         #expect(try config.modes["service"]!.bindings[KeyCombo("esc")]?.commands == ["reload-config", "mode main"])
         #expect(try config.modes["service"]!.bindings[KeyCombo("alt-shift-j")]?.commands == ["join-with down", "mode main"])
     }
@@ -50,14 +50,14 @@ struct ConfigTests {
 
     @Test func `Top-level keys`() throws {
         let config = try Config.parse("""
-        start-at-login = false
+        start-at-login = true
         workspaces = 3
         follow-space-order = true
         default-layout = 'accordion'
         follow-app-activation = false
         float-windows-without-fullscreen = false
         """)
-        #expect(!config.startAtLogin)
+        #expect(config.startAtLogin)
         #expect(config.workspaces == 3)
         #expect(config.followSpaceOrder)
         #expect(config.defaultLayout == .accordion)
@@ -70,6 +70,7 @@ struct ConfigTests {
     @Test func `Workspace layouts`() throws {
         let config = try Config.parse("""
         default-tiling = false
+        default-layout = 'tiles'
         [workspace.2]
         tiling = true
         layout = 'fixed'
@@ -110,6 +111,7 @@ struct ConfigTests {
 
     @Test func `Workspace settings per display`() throws {
         let config = try Config.parse("""
+        default-layout = 'tiles'
         [workspace.2]
         layout = 'fixed'
         columns = 2

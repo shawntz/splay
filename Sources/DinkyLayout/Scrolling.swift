@@ -45,7 +45,7 @@ extension Workspace {
     var stripArea: CGRect {
         let area = gaps.inset(bounds)
         guard root.children.count > 1 else { return area }
-        let clear = Self.peek + gaps.horizontal / 2
+        let clear = sliver + gaps.horizontal / 2
         let left = walls.contains(.left) ? 0 : max(clear - gaps.left, 0)
         let right = walls.contains(.right) ? 0 : max(clear - gaps.right, 0)
         return CGRect(x: area.minX + left, y: area.minY, width: area.width - left - right, height: area.height)
@@ -54,12 +54,12 @@ extension Workspace {
     /// Each column's start and width in points along the strip, from its left edge. Half an inner gap is part
     /// of a column on each side that has a neighbour, so neighbours end up a whole gap apart. A lone column is
     /// as wide as the screen; any other is its share of it, grown to fit its windows' minimum widths.
-    func columnSpans(in area: CGRect) -> [(start: CGFloat, width: CGFloat)] {
+    func columnSpans(in area: CGRect, minimums: [WindowID: CGSize]? = nil) -> [(start: CGFloat, width: CGFloat)] {
         let count = root.children.count, gap = gaps.horizontal
         var start: CGFloat = 0
         return root.children.indices.map { i in
             let insets = (i > 0 ? gap / 2 : 0) + (i < count - 1 ? gap / 2 : 0)
-            let minimum = root.children[i].minimumExtent(.horizontal, gap: gap, padding: accordionPadding, minimumSizes)
+            let minimum = root.children[i].minimumExtent(.horizontal, gap: gap, padding: accordionPadding, minimums ?? minimumSizes)
             let width = count == 1 ? area.width : max((area.width * CGFloat(width(ofColumn: i))).rounded(), minimum + insets)
             defer { start += width }
             return (start, width)
@@ -70,6 +70,7 @@ extension Workspace {
     /// reaches into the gutter there, which nothing is parked in, out to the outer gap. A strip that fits
     /// between the outer gaps is centred.
     func offset(for spans: [(start: CGFloat, width: CGFloat)], in area: CGRect) -> CGFloat {
+        if let centred = centredOffset(for: spans, in: area) { return centred }
         let total = spans.last.map { $0.start + $0.width } ?? 0, inset = gaps.inset(bounds)
         let first = area.minX - inset.minX, last = total - area.width - (inset.maxX - area.maxX)
         guard first < last else { return (first + (total - inset.width) / 2).rounded() }
@@ -116,8 +117,8 @@ extension Workspace {
     /// left on, under that neighbour. At a wall it stays wholly on screen instead, behind the columns.
     func parked(_ frame: CGRect) -> CGRect {
         var x = frame.minX
-        x = min(x, walls.contains(.right) ? bounds.maxX - frame.width : bounds.maxX - Self.peek)
-        x = max(x, walls.contains(.left) ? bounds.minX : bounds.minX + Self.peek - frame.width)
+        x = min(x, walls.contains(.right) ? bounds.maxX - frame.width : bounds.maxX - sliver)
+        x = max(x, walls.contains(.left) ? bounds.minX : bounds.minX + sliver - frame.width)
         return CGRect(x: x, y: frame.minY, width: frame.width, height: frame.height)
     }
 

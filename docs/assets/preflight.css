@@ -1,5 +1,33 @@
 /*
-  1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)
+  Preflight, the base stylesheet of Tailwind CSS v4, vendored unchanged apart from this comment
+  and three links to CSS Remedy issues, which moved to github.com/jensimmons/cssremedy.
+  https://github.com/tailwindlabs/tailwindcss
+
+  MIT License
+
+  Copyright (c) Tailwind Labs, Inc.
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+*/
+
+/*
+  1. Prevent padding and border from affecting element width. (https://github.com/jensimmons/cssremedy/issues/4)
   2. Remove default margins and padding
   3. Reset all borders.
 */
@@ -218,7 +246,7 @@ menu {
 }
 
 /*
-  1. Make replaced elements `display: block` by default. (https://github.com/mozdevs/cssremedy/issues/14)
+  1. Make replaced elements `display: block` by default. (https://github.com/jensimmons/cssremedy/issues/14)
   2. Add `vertical-align: middle` to align replaced elements more sensibly by default. (https://github.com/jensimmons/cssremedy/issues/14#issuecomment-634934210)
       This can trigger a poorly considered lint error in some tools but is included by design.
 */
@@ -236,7 +264,7 @@ object {
 }
 
 /*
-  Constrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/mozdevs/cssremedy/issues/14)
+  Constrain images and videos to the parent width and preserve their intrinsic aspect ratio. (https://github.com/jensimmons/cssremedy/issues/14)
 */
 
 img,

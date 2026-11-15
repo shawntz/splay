@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    {% include head.html %}
+  </head>
+  <body class="landing">
+    {% include header.html %}
+
+    <main id="content">
+      {{ content }}
+    </main>
+
+    {% include footer.html %}
+
+    <script>
+      // The demo videos carry controls and do not play until this runs. With motion allowed they
+      // lose the controls and play while on screen. With reduced motion they keep the poster.
+      (function () {
+        var still = window.matchMedia("(prefers-reduced-motion: reduce)");
+        var videos = document.querySelectorAll("video[data-autoplay]");
+        var seen = "IntersectionObserver" in window && new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (still.matches) return;
+            if (e.isIntersecting) e.target.play().catch(function () { e.target.controls = true; }); else e.target.pause();
+          });
+        }, { threshold: 0 });
+        function apply() {
+          videos.forEach(function (v) {
+            if (still.matches) {
+              if (!v.paused || v.currentTime > 0) { v.pause(); v.load(); }
+              v.controls = true;
+            } else {
+              v.controls = false;
+              v.muted = true;
+              if (seen) seen.observe(v); else v.play().catch(function () { v.controls = true; });
+            }
+          });
+        }
+        apply();
+        if (still.addEventListener) still.addEventListener("change", apply);
+      })();
+    </script>
+  </body>
+</html>

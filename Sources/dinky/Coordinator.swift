@@ -69,7 +69,7 @@ final class Coordinator {
     /// The focused display just before `lastFocused` took focus.
     private(set) var displayBeforeFocus: String?
     /// A window dinky just focused, and until when focus reads that disagree are taken as stale.
-    private var focusing: (id: WindowID, until: Date)?
+    var focusing: (id: WindowID, until: Date)?
     /// A focus loss to no window remains attributable until another window or user input supersedes it.
     private var focusDeparture = FocusDeparture()
     /// Windows last seen minimized, so only the moment a window is minimized counts as it leaving its Space.
@@ -83,6 +83,8 @@ final class Coordinator {
     private var snap: Set<UInt64> = []
     /// While set, `flush` leaves the trees for later. See `spacesShown`.
     private var holding = false
+    /// While set, windows placed in a tree wait here to go in together. See `placingInOrder`.
+    private var placing: [Window]?
 
     init(displays: DisplayModel, config: Config, applier: FrameApplier = FrameApplier()) {
         self.displays = displays
@@ -134,7 +136,7 @@ final class Coordinator {
         updateBorders()
         configureWorkspaces()
         // A workspace switched to/from floating must release/acquire its existing windows too.
-        for window in model.windows.values { track(window) }
+        placingInOrder { for window in Self.placementOrder(model.windows.values) { track(window) } }
         fitToDisplays()
         layouts.dirty.formUnion(workspaces.keys)
         flush()
@@ -216,7 +218,7 @@ final class Coordinator {
     /// no longer exist are dropped.
     func reconcile() {
         configureWorkspaces()
-        model.reconcile()
+        placingInOrder { model.reconcile() }
         fitToDisplays()
         workspaces = workspaces.filter { displays.display(containingSpace: $0.key) != nil || !$0.value.windows.isEmpty }
         syncFocus()
@@ -249,7 +251,7 @@ final class Coordinator {
             // A minimized/hidden window can still have the right model Space but no tile. Re-read it on arrival.
             let stale = here.filter { id in placements[id].map { $0.floating || $0.space == key } != true }
                 + (workspaces[key]?.windows ?? []).filter { !here.contains($0) }
-            model.reconcile(stale)
+            placingInOrder { model.reconcile(stale) }
         }
         holding = wasHolding
         // The visible area moves with the Dock and the menu bar, which arrives as a display change that is no Space
@@ -329,6 +331,7 @@ final class Coordinator {
             workspaces[key]!.fullscreenWidth = fullscreenWidth(for: key)
             workspaces[key]!.loneWindowWidth = loneWindowWidth(for: key)
             workspaces[key]!.setAlgorithm(workspaces[key]!.chosenAlgorithm ?? settings(for: key).algorithm)
+            workspaces[key]!.applyStrip(config.scrolling)
         }
     }
 
@@ -384,7 +387,7 @@ final class Coordinator {
         if let old { edit(old) { $0.remove(window.id) } }
         // A window coming from another Space's tree is moving, not switching tabs: tabs share a Space.
         if let new, old == nil, holdAsTab(window, in: new) { return }
-        if let new { edit(new) { $0.insert(window.id) } }
+        if let new { place(window, in: new) }
         placements[window.id]!.space = new
     }
 
@@ -529,6 +532,7 @@ final class Coordinator {
             workspaces[key]!.fullscreenWidth = fullscreenWidth(for: key)
             workspaces[key]!.loneWindowWidth = loneWindowWidth(for: key)
             workspaces[key]!.walls = walls(of: display)
+            workspaces[key]!.applyStrip(config.scrolling)
         }
         return key
     }
@@ -618,5 +622,38 @@ final class Coordinator {
         var sizes: [WindowID: CGSize] = [:]
         for id in workspace.windows { sizes[id] = applier.minimumSize(of: id, app: model.windows[id]?.bundleID) }
         return sizes
+    }
+}
+
+// Windows already open are placed many at once: at launch, on a reconcile (retile, enabling, display changes) and
+// when a Space is first shown. Placed as they are read, each new column would go right of the one before in the
+// order the model lists them, which has nothing to do with the screen and at launch, a dictionary's, changes from one
+// launch to the next. Held and put in together, they go in as the screen shows them. Columns a strip parked at a
+// display edge share that edge, so their frames no longer tell their order: on the right they go in by window ID,
+// on the left widest first.
+extension Coordinator {
+    /// Puts a window in the tree of Space `key`, or holds it for the batch `placingInOrder` is collecting.
+    func place(_ window: Window, in key: UInt64) {
+        guard placing == nil else { return placing!.append(window) }
+        edit(key) { $0.insert(window.id) }
+    }
+
+    /// Runs `body`, then puts the windows it placed in their trees in `placementOrder`, each where its placement
+    /// says now: one that closed or left meanwhile is not put back.
+    func placingInOrder(_ body: () -> Void) {
+        guard placing == nil else { return body() }
+        placing = []
+        body()
+        let held = Dictionary(placing!.map { ($0.id, $0) }, uniquingKeysWith: { $1 }).values
+        placing = nil
+        for window in Self.placementOrder(held) {
+            if let key = placements[window.id]?.space { edit(key) { $0.insert(window.id) } }
+        }
+    }
+
+    /// The order to place windows that are already open in: left to right as they stand, then top to bottom, then
+    /// by ID, the same on every launch.
+    static func placementOrder(_ windows: some Sequence<Window>) -> [Window] {
+        windows.sorted { ($0.frame.minX, $0.frame.minY, $0.id) < ($1.frame.minX, $1.frame.minY, $1.id) }
     }
 }

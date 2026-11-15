@@ -1,9 +1,10 @@
+import DinkyConfig
 import DinkySocket
 import Foundation
 
 // Keep the app's path policy here. The transport requires an explicit path so tests and other
 // callers cannot accidentally unlink or connect to the running app's socket.
-let socketPath = (NSTemporaryDirectory() as NSString).appendingPathComponent("dinky.sock")
+let socketPath = (NSTemporaryDirectory() as NSString).appendingPathComponent(Brand.socketName)
 typealias Reply = DinkySocket.Reply
 typealias SocketServer = DinkySocket.SocketServer
 

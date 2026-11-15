@@ -35,6 +35,7 @@ extension Coordinator {
                     "focused": workspace.focused ?? 0,
                     "fullscreen": workspace.fullscreen ?? 0,
                     "expected": Dictionary(uniqueKeysWithValues: layout.frames.map { ("\($0.key)", debugFrame($0.value)) }),
+                    "layout": layoutName(ofWorkspace: key) ?? "",
                 ] as [String: Any]
             },
             "placements": placements.map { id, placement in

@@ -6,7 +6,8 @@ import TOMLDecoder
 // property initial values, and the shipped file (DefaultConfig.swift) spells out the same values.
 
 public struct Config: Equatable {
-    public var startAtLogin = true
+    /// Off unless asked for, so a first run registers no login item the user did not choose.
+    public var startAtLogin = false
     /// Workspaces across all displays, numbered from 1. Each is one native Space.
     public var workspaces = 5
     /// `[workspace-to-display]`: by workspace number, the display patterns it lives on, the first that matches
@@ -15,7 +16,7 @@ public struct Config: Equatable {
     /// Renumber workspaces when their Spaces are reordered, rather than moving windows back to keep the numbers.
     public var followSpaceOrder = false
     /// Workspace layout, with 'tiles' retained as the old name for dwindle.
-    public var defaultLayout = LayoutKind.tiles
+    public var defaultLayout = LayoutKind.scrolling
     /// Whether dinky tiles numbered workspaces unless overridden.
     public var defaultTiling = true
     /// Workspace numbers (1-based) with their own tiling settings, resolved against the top-level defaults.
@@ -49,9 +50,9 @@ public struct Config: Equatable {
 
     public init() {}
 
-    /// `~/.config/dinky/dinky.toml`
+    /// `Brand.configPath` in the home folder.
     public static var userConfigURL: URL {
-        FileManager.default.homeDirectoryForCurrentUser.appending(path: ".config/dinky/dinky.toml")
+        FileManager.default.homeDirectoryForCurrentUser.appending(path: Brand.configPath)
     }
 
     /// The config shipped with dinky, used when the user has none.
@@ -287,12 +288,19 @@ public struct Scrolling: Equatable {
     /// A new column's width, as a share of the display's width inside the outer gaps. Omarchy's 0.49 fits two
     /// columns side by side with a sliver of margin; a lone column always fills the display.
     public var columnWidth = 0.49
+    /// Whether focusing a column centres it: never, always, or when it would not fit beside the one focus left.
+    public var centerFocusedColumn = CenterFocusedColumn.never
+    /// The shares `column-width next` and `prev` step through, as `columnWidth` is one. Empty turns that off.
+    public var presetColumnWidths = [0.33333, 0.5, 0.66667]
+    /// Points of a scrolled-out window left on screen at the display's edge.
+    public var peek = 25
 
     public init() {}
 
     init(_ t: Table) throws {
         columnWidth = try t.double("column-width") ?? columnWidth
         guard (0.1...1).contains(columnWidth) else { throw ConfigError(path: t.path("column-width"), "must be 0.1 to 1") }
+        try readStrip(t)
         try t.done()
     }
 }

@@ -7,7 +7,7 @@ import Sparkle
 // items, and the socket the CLI talks to.
 func runApp() -> Int32 {
     guard !appIsRunning() else {
-        fputs("dinky: already running (\(socketPath))\n", stderr)
+        fputs("\(Brand.name): already running (\(socketPath))\n", stderr)
         return 1
     }
     let app = NSApplication.shared
@@ -35,8 +35,9 @@ final class DinkyApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func applicationDidFinishLaunching(_ note: Notification) {
         AppState.shared.loadConfig()
         socket = SocketServer(path: socketPath, handle: handleCommand)
-        // `kill` and logout quit through NSApplication, so windows are restored on the way out.
-        for sig in [SIGTERM, SIGINT] {
+        // `kill`, logout and closing the terminal an attached run started from quit through NSApplication, so
+        // windows are restored on the way out.
+        for sig in quitSignals() {
             signal(sig, SIG_IGN)
             let source = DispatchSource.makeSignalSource(signal: sig, queue: .main)
             source.setEventHandler { NSApp.terminate(nil) }
@@ -123,7 +124,7 @@ final class DinkyApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
             menu.addItem(withTitle: otherTilersWarning(otherTilers), action: nil, keyEquivalent: "")
         }
         if !hotkeysActive {
-            menu.addItem(withTitle: "Key bindings are off: dinky can't read the keyboard. Check Accessibility in System Settings.",
+            menu.addItem(withTitle: "Key bindings are off: \(Brand.displayName) can't read the keyboard. Check Accessibility in System Settings.",
                          action: nil, keyEquivalent: "")
         }
         menu.addItem(.separator())
@@ -150,13 +151,14 @@ final class DinkyApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.addItem(submenu("Move Window and Follow", moveFollow))
         menu.addItem(.separator())
 
-        menu.addItem(submenu("Focus", directions("focus")))
+        menu.addItem(submenu("Focus", directions("focus", then: [nil, ("First Column", "focus-column first"), ("Last Column", "focus-column last")])))
         menu.addItem(submenu("Move Window", directions("move")))
         menu.addItem(submenu("Join With", directions("join-with")))
         menu.addItem(submenu("Resize", items([
             ("Grow", "resize smart +50"), ("Shrink", "resize smart -50"),
             ("Wider", "resize width +50"), ("Narrower", "resize width -50"),
             ("Taller", "resize height +50"), ("Shorter", "resize height -50"),
+            nil, ("Next Column Width", "column-width next"), ("Previous Column Width", "column-width prev"), ("Maximize Column", "maximize-column"),
         ])))
         menu.addItem(submenu("Layout", items([
             ("Tiles", "layout tiles"), ("Accordion", "layout accordion"), nil,
@@ -168,6 +170,7 @@ final class DinkyApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.addItem(item("Fullscreen", "fullscreen"))
         menu.addItem(item("Balance Sizes", "balance-sizes"))
         menu.addItem(item("Flatten Workspace Tree", "flatten-workspace-tree"))
+        menu.addItem(item("Center Column", "center-column"))
         menu.addItem(.separator())
 
         menu.addItem(submenu("Display", items([
@@ -209,10 +212,7 @@ final class DinkyApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
             menu.addItem(item("Restore \(recoverable) windows from the previous session", "recover"))
         }
         menu.addItem(.separator())
-        let updates = NSMenuItem(title: "Check for Updates…", action: #selector(checkForUpdates(_:)), keyEquivalent: "")
-        updates.target = self
-        menu.addItem(updates)
-        menu.addItem(NSMenuItem(title: "Quit dinky", action: #selector(NSApplication.terminate(_:)), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Quit \(Brand.displayName)", action: #selector(NSApplication.terminate(_:)), keyEquivalent: ""))
     }
 
     private func item(_ title: String, _ command: String, enabled: Bool = true) -> NSMenuItem {
@@ -223,7 +223,7 @@ final class DinkyApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let it = NSMenuItem(title: title, action: #selector(runCommand(_:)), keyEquivalent: "")
         it.target = self
         it.representedObject = commands
-        it.toolTip = commands.map { "dinky \($0)" }.joined(separator: "\n")
+        it.toolTip = commands.map { "\(Brand.name) \($0)" }.joined(separator: "\n")
         it.isEnabled = enabled
         if let (equivalent, mask) = key?.menuKey {
             it.keyEquivalent = equivalent
@@ -241,8 +241,8 @@ final class DinkyApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
         return menu
     }
 
-    private func directions(_ command: String) -> NSMenu {
-        items(["left", "down", "up", "right"].map { ($0.capitalized, "\(command) \($0)") })
+    private func directions(_ command: String, then more: [(String, String)?] = []) -> NSMenu {
+        items(["left", "down", "up", "right"].map { ($0.capitalized, "\(command) \($0)") } + more)
     }
 
     private func submenu(_ title: String, _ menu: NSMenu) -> NSMenuItem {

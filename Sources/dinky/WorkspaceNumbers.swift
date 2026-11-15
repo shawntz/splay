@@ -80,7 +80,7 @@ final class WorkspaceNumbers: WorkspaceNumbering {
         guard AppState.shared.enabled else {
             // Windows stay where macOS put them, and homes are noted again from here.
             if displaced.arranged(enabled: false, completed: false) == .leaveThem {
-                print("workspaces: windows a display change moved while dinky was disabled stay where they are")
+                print("workspaces: windows a display change moved while \(Brand.name) was disabled stay where they are")
             }
             return numberInPlace()
         }

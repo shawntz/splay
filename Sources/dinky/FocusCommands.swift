@@ -17,7 +17,7 @@ extension Dispatcher {
         }
         if let id = found { return focus(window: id) }
         let model = AppState.shared.displays
-        if boundaries == .allMonitorsOuterFrame, let from = model.display(ofWindow: coordinator.focusedWindow) {
+        if boundaries == .allMonitorsOuterFrame, let from = model.display(ofWindow: coordinator.commandWindow) {
             let line = displays(inLineWith: from, direction.orientation, model.displays)
             let index = line.firstIndex(of: from)! + (direction.isForward ? 1 : -1)
             if line.indices.contains(index) { return enter(line[index], from: direction) }
@@ -77,7 +77,7 @@ extension Dispatcher {
         return .ok("focused display \((model.displays.firstIndex(of: display) ?? 0) + 1)")
     }
 
-    private static func focus(window id: WindowID) -> Reply {
+    static func focus(window id: WindowID) -> Reply {
         guard let coordinator = AppState.shared.coordinator, let window = coordinator.model.windows[id] else {
             return .error("window \(id) is gone")
         }

@@ -175,6 +175,7 @@ struct ParseTests {
         "focus left", "focus-monitor next", "move left", "join-with left", "resize smart +10", "layout tiles", "workspace-layout master",
         "fullscreen", "flatten-workspace-tree", "balance-sizes", "swap-with-master", "retile", "clear-minimum-sizes", "mode main", "reload-config", "enable on",
         "list-workspaces", "list-windows", "list-monitors", "list-displays", "list-modes", "debug-state", "exec-and-forget true",
+        "center-column", "column-width next", "maximize-column", "focus-column first",
     ]
 
     @Test func `Known-good lines cover exactly the documented names`() {

@@ -42,6 +42,11 @@ public enum Command: Equatable, Sendable {
     case debugState
     /// Shell text run with `/bin/sh -c`, not waited for.
     case execAndForget(String)
+    // The scrolling strip's commands, after niri's: see StripCommands.swift.
+    case centerColumn
+    case columnWidth(ColumnWidth)
+    case maximizeColumn
+    case focusColumn(ColumnEnd)
 }
 
 /// A 1-based workspace number on the focused display, or its neighbour.

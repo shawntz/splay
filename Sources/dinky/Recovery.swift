@@ -1,4 +1,5 @@
 import AppKit
+import DinkyConfig
 import DinkyLayout
 import DinkyPrivate
 
@@ -27,7 +28,7 @@ final class Recovery {
     }
 
     static let url = FileManager.default.homeDirectoryForCurrentUser
-        .appendingPathComponent("Library/Application Support/dinky/journal.json")
+        .appendingPathComponent("Library/Application Support/\(Brand.supportFolder)/journal.json")
 
     /// How long a restore waits for apps to take their frames. A hung app must not hold up quitting for long.
     private static let answerTimeout: TimeInterval = 3

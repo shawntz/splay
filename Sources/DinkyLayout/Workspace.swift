@@ -17,8 +17,8 @@ public enum FixedExpansion: Equatable, Sendable {
 /// One Space's tiling state: the tree, focus, fullscreen and the geometry settings used to lay it out.
 public struct Workspace: Equatable, Sendable {
     /// The Space's visible rect, top-left origin.
-    public var bounds: CGRect
-    public var gaps: Gaps
+    public var bounds: CGRect { didSet { if bounds != oldValue { keepFocusedColumnInView() } } }
+    public var gaps: Gaps { didSet { if gaps != oldValue { keepFocusedColumnInView() } } }
     public var accordionPadding: CGFloat
     /// Whether a container switching to accordion follows its longer side (`auto`), unless a `layout` command
     /// chose its orientation.
@@ -38,15 +38,15 @@ public struct Workspace: Equatable, Sendable {
     /// A lone window's share, or nil to keep using the fullscreen width.
     public var loneWindowWidth: Double?
     /// Sizes windows refused to go below. Tiles grow to them when their siblings can give the space.
-    public var minimumSizes: [WindowID: CGSize] = [:]
+    public var minimumSizes: [WindowID: CGSize] = [:] { didSet { keepFocusedColumn(sizedBy: oldValue) } }
     /// Scrolling: the width of a new column, as a share of the width inside the outer gaps.
     public var columnWidth = 0.5
     /// Scrolling: each window's column width, as a share. Every window of a column has its column's width.
-    var columnWidths: [WindowID: Double] = [:]
+    var columnWidths: [WindowID: Double] = [:] { didSet { forgetUnmaximizedWidths(changedFrom: oldValue) } }
     /// Scrolling: how far the strip is scrolled, in points from its start. The layout clamps it.
     var scrollOffset: CGFloat = 0
     /// Scrolling: the edges of `bounds` with another display beyond them, where a window cannot hang over.
-    public var walls: Set<Direction> = []
+    public var walls: Set<Direction> = [] { didSet { if walls != oldValue { keepFocusedColumnInView() } } }
     /// Master: the master window's share of the width inside the outer gaps while the stack is open.
     public var masterSize = 0.6
     /// Master: the side the master window takes. See `setMasterSide(_:)`.
@@ -56,6 +56,17 @@ public struct Workspace: Equatable, Sendable {
     var stackOrientation = ContainerOrientation.vertical
     /// The algorithm a `layout` command switched to, kept over the config's. Nil follows the config.
     public var chosenAlgorithm: TilingAlgorithm?
+    /// Scrolling: when focusing a column centres it on the display. See ScrollingCentring.swift.
+    public var centerFocusedColumn = CenterFocusedColumn.never
+    /// Scrolling: the windows of the column `centerColumn()` or the on-overflow rule centred, which stays centred
+    /// while focus stays in it.
+    var centredColumn: Set<WindowID> = []
+    /// Scrolling: the widths `cycleColumnWidth` steps through, as shares like `columnWidth`.
+    public var presetColumnWidths = [1.0 / 3, 0.5, 2.0 / 3]
+    /// Scrolling: the width each window's column had before `toggleMaximizeColumn()` widened it.
+    var unmaximizedWidths: [WindowID: Double] = [:]
+    /// Scrolling: how much of a parked window stays on screen, in points. See `peek`.
+    public var sliver = Workspace.peek { didSet { if sliver != oldValue { keepFocusedColumnInView() } } }
 
     /// An empty workspace laid out by `algorithm`. A dwindle accordion root with `autoOrientAccordions` starts
     /// `auto`, as a container switched to accordion would, so it runs top to bottom on a tall display.
@@ -122,6 +133,7 @@ public struct Workspace: Equatable, Sendable {
     /// If it was focused, focus moves to the window that took its place.
     public mutating func remove(_ id: WindowID) {
         guard let path = root.path(of: id) else { return }
+        let anchor = focused == id ? nil : focusedColumnX()
         if case .fixed = algorithm, isFixedTree {
             removeFixedWindow(at: path)
             trimEmptyOverflow()
@@ -141,6 +153,7 @@ public struct Workspace: Equatable, Sendable {
             focused = nil
             if let next = root.mostRecentWindow ?? windows.first { focus(next) }
         }
+        keepFocusedColumn(at: anchor)
     }
 
     static var emptyCell: Node { .container(Container(.horizontal)) }
@@ -289,10 +302,13 @@ public struct Workspace: Equatable, Sendable {
     /// became the one shown. Does nothing if `old` is not here or `new` already is.
     public mutating func replace(_ old: WindowID, with new: WindowID) {
         guard let path = root.path(of: old), !contains(new) else { return }
+        let anchor = focusedColumnX()
         root.modify(at: Array(path.dropLast())) { $0.replace(at: path.last!, with: .window(new)) }
         if focused == old { focused = new }
+        handOver(old, to: new)
         minimumSizes[old] = nil
         columnWidths[new] = columnWidths.removeValue(forKey: old)
+        keepFocusedColumn(at: anchor)
     }
 
     /// Undo every tree edit: the windows go back into the configured layout, in order, with equal ratios.
@@ -305,6 +321,7 @@ public struct Workspace: Equatable, Sendable {
     /// Ends fullscreen unless it is the fullscreen window.
     public mutating func focus(_ id: WindowID) {
         guard let path = root.path(of: id) else { return }
+        updateCentring(focusing: id)
         if focused != id { isFullscreen = false }
         focused = id
         for depth in path.indices {
@@ -432,6 +449,7 @@ public struct Workspace: Equatable, Sendable {
             }
         }
         normalize()
+        reveal(focused)
     }
 
     /// Toggle fullscreen for the focused window. The tree is not changed.

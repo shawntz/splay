@@ -111,7 +111,7 @@ extension Command {
         case "debug-state":
             return none ? .debugState : nil
         default:
-            return nil
+            return try parseStrip(name, args)
         }
     }
 

@@ -1,3 +1,5 @@
+import DinkyConfig
+
 // The command reference: one line of syntax and one of description per command, in the order a user
 // would look for them. This list owns the set of command names and their syntax: parse errors quote it and
 // `dinky help` prints it. docs/commands.md owns the prose, and DocsTests holds its table to these names.
@@ -67,13 +69,13 @@ extension Command {
         Doc(syntax: "retile",
             description: "Re-read every window and re-apply the layout of every workspace on screen."),
         Doc(syntax: "clear-minimum-sizes",
-            description: "Forget the minimum window sizes dinky has learned for every app, and re-apply every layout."),
+            description: "Forget the minimum window sizes \(Brand.name) has learned for every app, and re-apply every layout."),
         Doc(syntax: "mode <name>",
             description: "Switch to a binding mode from the config, such as 'main' or 'service'."),
         Doc(syntax: "reload-config",
-            description: "Reload ~/.config/dinky/dinky.toml. On an error the previous config stays."),
+            description: "Reload ~/\(Brand.configPath). On an error the previous config stays."),
         Doc(syntax: "enable <on|off|toggle>",
-            description: "Turn dinky on or off. Off stops tiling and restores every window to its original frame and Space."),
+            description: "Turn \(Brand.name) on or off. Off stops tiling and restores every window to its original frame and Space."),
         Doc(syntax: "list-workspaces [--all|--focused|--monitor <focused|all|n>...] [--visible [no]] [--empty [no]] [--format <format>]",
             description: "Print workspace numbers, one per line, of the focused display by default. --all covers every display. "
                 + "--focused prints the focused workspace. "
@@ -87,12 +89,22 @@ extension Command {
         Doc(syntax: "list-displays [--focused [no]] [--format <format>]",
             description: "The same as list-monitors."),
         Doc(syntax: "list-modes [--current]",
-            description: "Print the binding modes in the config, one per line, main first. --current prints the mode dinky is in."),
+            description: "Print the binding modes in the config, one per line, main first. --current prints the mode \(Brand.name) is in."),
         Doc(syntax: "debug-state",
             description: "Print the tiling state as JSON: displays, each workspace's tree and expected frames, "
                 + "placements and windows. For tests and bug reports."),
         Doc(syntax: "exec-and-forget <shell command>",
-            description: "Run the rest of the line with /bin/sh -c without waiting. Its output goes to dinky's log."),
+            description: "Run the rest of the line with /bin/sh -c without waiting. Its output goes to \(Brand.name)'s log."),
+        Doc(syntax: "center-column",
+            description: "In a scrolling layout, centre the focused column on the display, and keep it centred while focus stays in it. "
+                + "[scrolling] center-focused-column centres columns as focus reaches them."),
+        Doc(syntax: "column-width <next|prev|SHARE>",
+            description: "In a scrolling layout, give the focused column the next wider of [scrolling] preset-column-widths, "
+                + "after the widest the narrowest, or with prev the next narrower; or SHARE, from 0.1 to 1, of the display's width."),
+        Doc(syntax: "maximize-column",
+            description: "In a scrolling layout, widen the focused column to the whole display; again, give it back the width it had."),
+        Doc(syntax: "focus-column <first|last>",
+            description: "In a scrolling layout, focus the first or last column, at the window last focused in it."),
     ]
 }
 

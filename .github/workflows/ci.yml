@@ -4,10 +4,6 @@ on:
   pull_request:
   push:
     branches: [main]
-    paths-ignore:
-      - docs/**
-      - CHANGELOG.md
-      - .github/workflows/pages.yml
 
 permissions:
   contents: read

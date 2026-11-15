@@ -11,8 +11,8 @@ func runDoctor(_ args: [String]) -> Int32 {
     func fail(_ text: String) { errors += 1; print("  error: \(text)") }
 
     let os = ProcessInfo.processInfo.operatingSystemVersion
-    print("dinky doctor")
-    print("  macOS \(os.majorVersion).\(os.minorVersion).\(os.patchVersion); dinky is developed and tested on macOS 27")
+    print("\(Brand.name) doctor")
+    print("  macOS \(os.majorVersion).\(os.minorVersion).\(os.patchVersion); \(Brand.name) is developed and tested on macOS 27")
 
     var url = Config.userConfigURL
     if let i = args.firstIndex(of: "--config"), i + 1 < args.count { url = URL(fileURLWithPath: args[i + 1]) }
@@ -63,7 +63,9 @@ func runDoctor(_ args: [String]) -> Int32 {
     let tilers = runningOtherTilers()
     tilers.isEmpty ? ok("no other tiling window manager is running") : warn(otherTilersWarning(tilers))
 
-    ok(AXIsProcessTrusted() ? "this terminal has Accessibility (the app needs its own grant)" : "this terminal has no Accessibility grant; only the app needs one")
+    ok(AXIsProcessTrusted()
+        ? "this terminal has Accessibility, which the app uses when started from it (opened from Finder or with open, it needs its own grant)"
+        : "this terminal has no Accessibility grant, which the app needs only when started from it (opened from Finder or with open, it needs its own)")
     if let reply = sendToApp("list-monitors --focused --format '%{monitor-name}'"), reply.ok {
         ok("app is running, focused display: \(reply.text)")
     } else {
@@ -78,12 +80,12 @@ func runDoctor(_ args: [String]) -> Int32 {
 func spaceSwitchingStatus(autoSwoosh: Bool, followsActivation: Bool) -> (warning: Bool, message: String)? {
     if autoSwoosh {
         return followsActivation
-            ? (true, "\"When switching to an application, switch to a Space with open windows\" is on; Cmd-Tab will use macOS's slow switch instead of dinky's; turn it off in System Settings > Desktop & Dock > Mission Control")
+            ? (true, "\"When switching to an application, switch to a Space with open windows\" is on; Cmd-Tab will use macOS's slow switch instead of \(Brand.name)'s; turn it off in System Settings > Desktop & Dock > Mission Control")
             : nil
     }
     let recovery = "To restore macOS switching, turn on \"When switching to an application, switch to a Space with open windows\" in System Settings > Desktop & Dock > Mission Control."
     return followsActivation
-        ? (false, "macOS Space switching is off; dinky follows app activation only while running and enabled. \(recovery)")
+        ? (false, "macOS Space switching is off; \(Brand.name) follows app activation only while running and enabled. \(recovery)")
         : (true, "macOS Space switching and follow-app-activation are both off; activating an app on another Space may show only its menu bar. \(recovery)")
 }
 

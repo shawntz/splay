@@ -1,0 +1,13 @@
+# The manual's pages, in reading order: the sidebar and the next and previous links.
+- title: Get started
+  url: /start/
+- title: Concepts
+  url: /concepts/
+- title: Layouts
+  url: /layouts/
+- title: Configuration
+  url: /configuration/
+- title: Commands
+  url: /commands/
+- title: Changelog
+  url: /changelog/

@@ -40,7 +40,7 @@ extern CFArrayRef SLSWindowIteratorGetCornerRadii(CFTypeRef iterator) __attribut
 	self.window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 640, 480)
 		styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskResizable | NSWindowStyleMaskMiniaturizable
 		backing:NSBackingStoreBuffered defer:NO];
-	self.window.title = @"Dinky border comparison";
+	self.window.title = @"Splay border comparison";
 	self.window.contentMinSize = NSMakeSize(640, 480);
 	// A floating test window stays outside Dinky's normal-window tiling and borders.
 	self.window.level = NSFloatingWindowLevel;
@@ -50,7 +50,7 @@ extern CFArrayRef SLSWindowIteratorGetCornerRadii(CFTypeRef iterator) __attribut
 	self.label.font = [NSFont systemFontOfSize:24];
 	self.label.frame = NSMakeRect(32, 350, 570, 40);
 	[self.window.contentView addSubview:self.label];
-	NSTextField *help = [NSTextField wrappingLabelWithString:@"Choose a correction below. Space toggles it against 0%.\nAdjust the border width and inspect the corners.\n\nYour running Dinky is unchanged. Close this window to finish."];
+	NSTextField *help = [NSTextField wrappingLabelWithString:@"Choose a correction below. Space toggles it against 0%.\nAdjust the border width and inspect the corners.\n\nYour running Splay is unchanged. Close this window to finish."];
 	help.frame = NSMakeRect(32, 230, 570, 110);
 	[self.window.contentView addSubview:help];
 	self.widthLabel = [NSTextField labelWithString:@"Border width: 4 pt"];

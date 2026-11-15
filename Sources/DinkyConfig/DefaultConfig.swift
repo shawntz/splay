@@ -3,15 +3,14 @@
 
 extension Config {
     public static let defaultTOML = """
-    #:schema https://dinky.rodeo/schemas/dinky.json
-    # ~/.config/dinky/dinky.toml. Saved changes take effect at once.
+    # ~/\(Brand.configPath). Saved changes take effect at once.
     # A key you leave out keeps the value shown here.
-    # Every key and command: https://dinky.rodeo/configuration/
+    # Every command: `\(Brand.name) help`, or docs/commands.md in the source. Every key: docs/configuration.md.
 
-    start-at-login = true
+    start-at-login = false          # true starts \(Brand.name) when you log in
     workspaces = 5                  # across all displays, one native Space each
     follow-space-order = false      # true renumbers workspaces when you reorder Spaces in Mission Control
-    default-layout = 'tiles'        # tiles (dwindle) | dwindle | accordion | fixed | scrolling | master
+    default-layout = 'scrolling'    # scrolling | tiles (dwindle) | dwindle | accordion | fixed | master
     default-tiling = true           # false leaves workspaces untiled unless overridden
     follow-app-activation = true    # Cmd-Tab and Dock clicks switch Spaces the fast way
     float-windows-without-fullscreen = true   # progress windows, About, Calculator and the like float
@@ -41,6 +40,9 @@ extension Config {
 
     [scrolling]
     column-width = 0.49             # a new column's share of the display; a lone column fills it
+    center-focused-column = 'never' # centre the focused column: never | always | on-overflow (when it won't fit beside the one before)
+    preset-column-widths = [0.33333, 0.5, 0.66667]   # what column-width next and prev step through; [] for none
+    peek = 25                       # points of a scrolled-out window left on screen
 
     [master]
     size = 0.6                      # the master's share of the display beside the stack; alone it fills it
@@ -50,7 +52,7 @@ extension Config {
     inner = 8                       # or { horizontal = 8, vertical = 8 }
     outer = 8                       # or { top = 8, bottom = 8, left = 8, right = 8 }
 
-    # Display patterns: main, secondary, or part of a name as `dinky list-displays` prints it.
+    # Display patterns: main, secondary, or part of a name as `\(Brand.name) list-displays` prints it.
     # A workspace lives on the first display its patterns match, else on the main display.
     # [workspace-to-display]
     # 5 = 'secondary'
@@ -97,9 +99,9 @@ extension Config {
     cmd = 'both'
     shift = 'both'
 
-    # dinky commands run on events. exec-and-forget gets $DINKY_WORKSPACE, $DINKY_PREV_WORKSPACE and $DINKY_DISPLAY
-    # in the workspace hooks, $DINKY_MODE, $DINKY_PREV_MODE in mode-changed, and $DINKY_DISPLAYS,
-    # $DINKY_PREV_DISPLAYS (how many displays) in display-changed.
+    # \(Brand.name) commands run on events. exec-and-forget gets $\(Brand.envPrefix)WORKSPACE, $\(Brand.envPrefix)PREV_WORKSPACE and $\(Brand.envPrefix)DISPLAY
+    # in the workspace hooks, $\(Brand.envPrefix)MODE, $\(Brand.envPrefix)PREV_MODE in mode-changed, and $\(Brand.envPrefix)DISPLAYS,
+    # $\(Brand.envPrefix)PREV_DISPLAYS (how many displays) in display-changed.
     # [hooks]
     # startup = ['exec-and-forget brew services restart sketchybar']
     # workspace-changed = ['exec-and-forget sketchybar --trigger workspace_change']
@@ -134,10 +136,8 @@ extension Config {
     alt-shift-8 = 'move-window-to-workspace 8'
     alt-shift-9 = 'move-window-to-workspace 9'
     alt-tab = 'workspace-back-and-forth'
-    alt-h = 'focus left'
     alt-j = 'focus down'
     alt-k = 'focus up'
-    alt-l = 'focus right'
     alt-shift-h = 'move left'
     alt-shift-j = 'move down'
     alt-shift-k = 'move up'
@@ -150,6 +150,19 @@ extension Config {
     alt-slash = 'layout tiles'
     alt-shift-n = 'move-window-to-display next'
     alt-shift-semicolon = 'mode service'
+    # Cmd-Left and Cmd-Right walk the strip, so apps no longer get them: line start and end in text fields,
+    # where Ctrl-A and Ctrl-E still work. To leave them to some apps, list their bundle IDs:
+    # cmd-left = { command = 'focus left', exclude-apps = ['bundle.id'] }
+    # alt-h and alt-l are left unbound, so Option-H and Option-L still reach apps and other tools.
+    cmd-left = 'focus left'
+    cmd-right = 'focus right'
+    # The strip: its first and last column, the focused column's preset widths, centring and maximising it.
+    cmd-home = 'focus-column first'
+    cmd-end = 'focus-column last'
+    alt-r = 'column-width next'
+    alt-shift-r = 'column-width prev'
+    alt-c = 'center-column'
+    alt-m = 'maximize-column'
 
     [mode.service]
     esc = ['reload-config', 'mode main']

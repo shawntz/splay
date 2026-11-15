@@ -1,4 +1,5 @@
 import Darwin
+import DinkyConfig
 
 // Other tiling window managers. Two tilers move the same windows back and forth, and to the user that looks like
 // dinky cannot tile: frames snap back, workspaces fall back to another layout, and the readback teaches dinky
@@ -6,7 +7,8 @@ import Darwin
 // float the window or disable dinky before snapping it, since tiled frames are still recovered.
 
 /// By lowercased process name, the tiler's display name. Process names cover apps and plain daemons (yabai) alike.
-private let tilers = ["aerospace": "AeroSpace", "amethyst": "Amethyst", "yabai": "yabai", "kiwidesk": "KiwiDesk"]
+private let tilers = ["aerospace": "AeroSpace", "amethyst": "Amethyst", "yabai": "yabai", "kiwidesk": "KiwiDesk",
+                      Brand.upstreamProcessName: Brand.upstreamDisplayName]
 
 /// The other tiling window managers running now, by name.
 func runningOtherTilers() -> [String] {
@@ -14,7 +16,8 @@ func runningOtherTilers() -> [String] {
     let count = proc_listallpids(&pids, Int32(pids.count * MemoryLayout<pid_t>.size))
     var name = [CChar](repeating: 0, count: 64)
     var found: Set<String> = []
-    for pid in pids.prefix(Int(max(count, 0))) where pid > 0 && proc_name(pid, &name, UInt32(name.count)) > 0 {
+    // Not this process: a binary run from .build still has upstream's process name.
+    for pid in pids.prefix(Int(max(count, 0))) where pid > 0 && pid != getpid() && proc_name(pid, &name, UInt32(name.count)) > 0 {
         if let tiler = tilers[String(cString: name).lowercased()] { found.insert(tiler) }
     }
     return found.sorted()
@@ -22,5 +25,5 @@ func runningOtherTilers() -> [String] {
 
 /// The warning for the menu, the log and `dinky doctor`.
 func otherTilersWarning(_ names: [String]) -> String {
-    "\(names.joined(separator: " and ")) \(names.count == 1 ? "is" : "are") also tiling windows; quit \(names.count == 1 ? "it" : "them") or dinky's layouts will be undone"
+    "\(names.joined(separator: " and ")) \(names.count == 1 ? "is" : "are") also tiling windows; quit \(names.count == 1 ? "it" : "them") or \(Brand.displayName)'s layouts will be undone"
 }

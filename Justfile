@@ -8,36 +8,22 @@ test:
 bundle *flags:
     scripts/bundle.sh {{flags}}
 
-# Debug bundle, replace any running dinky, and run attached so logs stream here (fut's run extension uses this).
+# Debug bundle, replace any running Splay, and run attached so logs stream here.
 run: kill
     scripts/bundle.sh --debug
-    ./build/dinky.app/Contents/MacOS/dinky
+    ./build/Splay.app/Contents/MacOS/splay
 
+# Only Splay's own executable: an installed upstream dinky.app never matches. SIGTERM, so windows are restored.
 kill:
-    pkill -f "dinky.app/Contents/MacOS/dinky" || true
+    pkill -f 'Splay\.app/Contents/MacOS/splay' || true
 
-vm-install: bundle
-    scripts/vm-install.sh
-
-# Symlink the bundled CLI into ~/.local/bin so `dinky <command>` works from any shell.
+# Symlink the bundled CLI into ~/.local/bin so `splay <command>` works from any shell.
 install: bundle
     mkdir -p ~/.local/bin
-    ln -sf "$PWD/build/dinky.app/Contents/MacOS/dinky" ~/.local/bin/dinky
-    ls -l ~/.local/bin/dinky
+    ln -sf "$PWD/build/Splay.app/Contents/MacOS/splay" ~/.local/bin/splay
+    ls -l ~/.local/bin/splay
 
-# Serve the manual at http://localhost:4000, on every interface, and rebuild it as docs/ changes.
+# Serve the site and manual at http://127.0.0.1:4000/splay/, to this Mac only, and rebuild it as docs/
+# changes. It builds into build/site, outside docs/. Needs Jekyll: gem install jekyll jekyll-relative-links
 docs:
-    cd docs && jekyll serve --livereload --host 0.0.0.0
-
-# Fuzz the debug build in the Tart VM: random actions, layout invariants checked after each. See scripts/fuzz.py.
-fuzz seed="1" steps="150": build
-    scripts/vm-fuzz.sh {{seed}} {{steps}}
-
-# Build, sign with Developer ID, notarize and staple into dist/, without publishing.
-package version:
-    scripts/package-release.sh {{quote(version)}}
-
-# Prepare, test, package, tag and publish a GitHub release from a clean, pushed main. The version defaults
-# to the latest tag plus 0.1.
-release version="":
-    scripts/release.sh {{quote(version)}}
+    jekyll serve --source docs --destination build/site --disable-disk-cache --livereload --host 127.0.0.1

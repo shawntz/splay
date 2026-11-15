@@ -24,7 +24,7 @@ extension Workspace {
                 : min(from.maxX, to.maxX) > max(from.minX, to.minX)
             return distance > 0 && overlaps ? (other, distance) : nil
         }
-        return candidates.min { $0.distance < $1.distance }?.id
+        return columnEntry(candidates.min { $0.distance < $1.distance }?.id, from: id)
     }
 
     /// The window a trackpad swipe toward `direction` focuses: the focused window's neighbour that way, a column of

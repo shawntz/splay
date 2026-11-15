@@ -25,7 +25,7 @@ enum Dispatcher {
                   !dinky_window_info(id).isMinimized,
                   AppState.shared.coordinator?.isFloating(id) != nil,
                   AppState.shared.numbers.number(of: dinky_window_space_id(id)) != nil else {
-                return .error("window \(id) is not a managed window on a numbered workspace; see `dinky list-windows --all`")
+                return .error("window \(id) is not a managed window on a numbered workspace; see `\(Brand.name) list-windows --all`")
             }
             // Only an explicit ID changes relative workspace semantics. Rules already supply an implicit
             // window override and retain their focused-display targets.
@@ -48,9 +48,9 @@ enum Dispatcher {
             }
             return switchWorkspace(.number(n))
         case .moveWindowToWorkspace(let target, let follow):
-            return moveWindowToWorkspace(target, follow: follow, window: window ?? focusedWindowID())
+            return moveWindowToWorkspace(target, follow: follow, window: window ?? commandWindowID())
         case .moveWindowToDisplay(let target, let follow):
-            return moveWindowToDisplay(target, follow: follow, window: window ?? focusedWindowID())
+            return moveWindowToDisplay(target, follow: follow, window: window ?? commandWindowID())
         case .focus(let direction, let boundaries, let action):
             return focus(direction, boundaries: boundaries, action: action)
         case .focusMonitor(let target):
@@ -116,6 +116,8 @@ enum Dispatcher {
         case .execAndForget(let shell):
             exec(["/bin/sh", "-c", shell], env: env)
             return .ok("")
+        case .centerColumn, .columnWidth, .maximizeColumn, .focusColumn:
+            return strip(command, window: window)
         }
     }
 
@@ -137,7 +139,8 @@ enum Dispatcher {
             guard (1...numbers.count).contains(n) else { throw Refusal("no workspace \(n), there are \(numbers.count)") }
             return n
         case .prev, .next:
-            let display = space.flatMap { model.display(containingSpace: $0) } ?? model.focusedDisplay()
+            let display = space.flatMap { model.display(containingSpace: $0) }
+                ?? model.focusedDisplay(window: AppState.shared.coordinator?.justFocusedWindow)
             guard let display, let current = numbers.number(of: space ?? targetSpaceID(on: display)) else {
                 throw Refusal("not on a numbered workspace")
             }
@@ -162,7 +165,7 @@ enum Dispatcher {
     private static func show(_ n: Int, landed: (() -> Void)? = nil) -> Reply {
         let model = AppState.shared.displays
         guard let space = AppState.shared.numbers.space(of: n), let display = model.display(containingSpace: space) else {
-            return .error("workspace \(n) has no Space; see `dinky doctor`")
+            return .error("workspace \(n) has no Space; see `\(Brand.name) doctor`")
         }
         // On screen and staying there; a switch still on its way is not, and takes `arrive` for when it lands.
         let showing = display.currentSpaceID == space && targetSpaceID(on: display) == space
@@ -193,7 +196,7 @@ enum Dispatcher {
         }
         guard let space = AppState.shared.numbers.space(of: n),
               let to = AppState.shared.displays.display(containingSpace: space) else {
-            return .error("workspace \(n) has no Space; see `dinky doctor`")
+            return .error("workspace \(n) has no Space; see `\(Brand.name) doctor`")
         }
         if let reply = relocate(wid, to: space, on: to, destination: "workspace \(n)", follow: follow) { return reply }
         // macOS activates another app when the Space left behind loses the active app's window, so focus the
@@ -206,7 +209,7 @@ enum Dispatcher {
 
     /// Runs a change on the focused window's tree; `change` returns false when there was nothing to do, which
     /// succeeds like `workspace N` on the workspace showing: the window is already where it was asked to go.
-    private static func tree(_ name: String, _ change: (inout Workspace) -> Bool) -> Reply {
+    static func tree(_ name: String, _ change: (inout Workspace) -> Bool) -> Reply {
         guard let coordinator = AppState.shared.coordinator else { return .error("tiling is not running") }
         switch coordinator.command(change) {
         case nil: return .error("\(name): the focused window is not tiled")
@@ -220,8 +223,8 @@ enum Dispatcher {
     /// and in a scrolling layout its column. Anything but floating tiles a floating window first.
     private static func layout(_ names: [LayoutName], window: WindowID?) -> Reply {
         guard let coordinator = AppState.shared.coordinator else { return .error("tiling is not running") }
-        let id = window ?? coordinator.focusedWindow
-        guard let floating = coordinator.isFloating(id) else { return .error("layout: no window dinky manages is focused") }
+        let id = window ?? coordinator.commandWindow
+        guard let floating = coordinator.isFloating(id) else { return .error("layout: no window \(Brand.name) manages is focused") }
         var current: [LayoutName] = floating ? [.floating] : [.tiling]
         if !floating, let (container, axis) = coordinator.layoutContainer(of: id) {
             current += LayoutName.describing(container.mode, axis: axis, auto: container.orientation == .auto)
@@ -241,8 +244,8 @@ enum Dispatcher {
     /// tiling a floating window first.
     private static func workspaceLayout(_ names: [WorkspaceLayoutName], window: WindowID?) -> Reply {
         guard let coordinator = AppState.shared.coordinator else { return .error("tiling is not running") }
-        let id = window ?? coordinator.focusedWindow
-        guard let floating = coordinator.isFloating(id) else { return .error("workspace-layout: no window dinky manages is focused") }
+        let id = window ?? coordinator.commandWindow
+        guard let floating = coordinator.isFloating(id) else { return .error("workspace-layout: no window \(Brand.name) manages is focused") }
         if floating { coordinator.setFloating(id, false) }
         guard let algorithm = coordinator.tilingAlgorithm(of: id) else { return .error("workspace-layout: the window is not tiled") }
         let name = nextLayout(in: names, current: [WorkspaceLayoutName.describing(algorithm)])
@@ -290,7 +293,7 @@ enum Dispatcher {
             // Let the caller perform --follow even when no move is needed.
             return follow ? nil : .ok("window \(wid) is already on \(destination)")
         }
-        let refocusFrom: UInt64? = !follow && wid == AppState.shared.coordinator?.focusedWindow ? source : nil
+        let refocusFrom: UInt64? = !follow && AppState.shared.coordinator?.hasFocus(wid) == true ? source : nil
         let from = AppState.shared.displays.display(ofWindow: wid)
         if let error = move(wid, to: space, arriving: destination) { return error }
         if let from { keepOffset(of: wid, from: from, to: to) }

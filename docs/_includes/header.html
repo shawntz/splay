@@ -1,0 +1,14 @@
+<a class="skip" href="#content">Skip to content</a>
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="brand" href="{{ '/' | relative_url }}">
+      <img src="{{ '/assets/icon-256.png' | relative_url }}" alt="" width="28" height="28">
+      <span>Splay</span>
+    </a>
+    <nav class="site-nav" aria-label="Site">
+      <a href="{{ '/start/' | relative_url }}"{% if page.layout == "default" %} aria-current="true"{% endif %}>Manual</a>
+      <a class="nav-optional" href="{{ '/#compare' | relative_url }}">Splay and Dinky</a>
+      <a href="{{ site.repository_url }}">GitHub</a>
+    </nav>
+  </div>
+</header>

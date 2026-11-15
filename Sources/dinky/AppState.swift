@@ -93,7 +93,7 @@ final class AppState {
     /// journaled window, including those the crashed session left tiled.
     func recover() -> Reply {
         guard recovery.recoverable > 0 else { return .error("no windows from a previous session to restore") }
-        return .ok(setEnabled(false) + "; dinky is disabled, `dinky enable on` tiles again")
+        return .ok(setEnabled(false) + "; \(Brand.name) is disabled, `\(Brand.name) enable on` tiles again")
     }
 
     /// Quitting stops tiling and puts every window back.

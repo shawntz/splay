@@ -1,9 +1,14 @@
-title: dinky
-description: A tiling window manager for macOS that leaves System Integrity Protection on.
-url: https://dinky.rodeo
-baseurl: ""
-repository: mikker/Dinky
-version: "0.28"
+title: Splay
+description: A tiling window manager for macOS that lays each Space out as a row of columns you scroll through, built on Dinky. System Integrity Protection stays on.
+# A project site. Every link and asset goes through relative_url or absolute_url,
+# so emptying baseurl serves the same site from the root of a domain.
+url: https://shawntz.github.io
+baseurl: /splay
+repository_url: https://github.com/shawntz/splay
+# One sentence on the landing page. Keep it in step with "Status" in start.md.
+status: Early. There are no releases, so you build it from source. Built and unit-tested on macOS 27, and not yet run on a real desktop.
+# No theme: the layouts and stylesheet are this folder's own.
+theme: null
 markdown: kramdown
 permalink: pretty
 relative_links:
@@ -13,6 +18,7 @@ plugins:
   - jekyll-relative-links
 exclude:
   - README.md
+  - border-development.md
 defaults:
   - scope:
       path: ""

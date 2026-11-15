@@ -1,0 +1,442 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:splay:config-schema",
+  "title": "splay configuration",
+  "description": "~/.config/splay/splay.toml. Every key is optional; a key left out keeps its default.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "start-at-login": {
+      "type": "boolean",
+      "default": false,
+      "description": "Register splay as a login item."
+    },
+    "workspaces": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 5,
+      "description": "Workspaces across all displays, numbered from 1, one native Space each. splay creates and removes Spaces to match."
+    },
+    "follow-space-order": {
+      "type": "boolean",
+      "default": false,
+      "description": "Renumber workspaces when Spaces are reordered within a display in Mission Control. Windows stay put; workspace settings follow the new numbers. Display assignments still win across displays. False keeps each workspace's number and moves its windows back at the next arrangement."
+    },
+    "workspace-to-display": {
+      "type": "object",
+      "description": "By workspace number, the display it lives on: a pattern (main, secondary, or a case-insensitive part of the display's name as `splay list-displays` prints it) or a list of them, the first that matches a connected display winning. Other workspaces, and these when no pattern matches, live on the main display.",
+      "propertyNames": { "pattern": "^[1-9][0-9]*$" },
+      "additionalProperties": {
+        "oneOf": [
+          { "type": "string", "minLength": 1 },
+          { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1 }
+        ]
+      }
+    },
+    "default-layout": {
+      "type": "string",
+      "enum": ["tiles", "dwindle", "accordion", "fixed", "scrolling", "master"],
+      "default": "scrolling",
+      "description": "Workspace layout. tiles is the original name for dwindle."
+    },
+    "default-tiling": { "type": "boolean", "default": true, "description": "Whether splay tiles numbered workspaces by default." },
+    "workspace": {
+      "type": "object",
+      "description": "Tiling overrides for numbered workspaces on every display (1-based).",
+      "propertyNames": { "pattern": "^[1-9][0-9]*$" },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "display": {
+            "type": "object",
+            "description": "This workspace's settings while it is on one display, keyed by pattern: main, secondary, or a case-insensitive part of the display's name. Omitted keys come from the workspace's own settings.",
+            "additionalProperties": { "$ref": "#/definitions/workspaceSettings" }
+          },
+          "tiling": { "type": "boolean" },
+          "layout": { "type": "string", "enum": ["tiles", "dwindle", "accordion", "fixed", "scrolling", "master"] },
+          "columns": { "type": "integer", "minimum": 1, "default": 1, "description": "Reserved columns for a fixed layout." },
+          "rows": { "type": "integer", "minimum": 1, "default": 1, "description": "Reserved rows for a fixed layout." },
+          "expand": { "type": "string", "enum": ["columns", "rows", "accordion"], "default": "columns", "description": "Where overflow windows go when every fixed cell is full." },
+          "fullscreen-width": { "type": "number", "minimum": 0.1, "maximum": 1, "default": 1, "description": "The share of the width a fullscreen window takes on this workspace. Lone windows use it unless lone-window-width is set." },
+          "lone-window-width": { "type": "number", "minimum": 0.1, "maximum": 1, "description": "A lone window's centred share on this workspace, over display and top-level values. If unset everywhere, uses the resolved fullscreen-width." }
+        },
+        "if": { "required": ["layout"], "properties": { "layout": { "enum": ["tiles", "dwindle", "accordion", "scrolling", "master"] } } },
+        "then": { "not": { "anyOf": [ { "required": ["columns"] }, { "required": ["rows"] }, { "required": ["expand"] } ] } }
+      }
+    },
+    "follow-app-activation": {
+      "default": true,
+      "description": "When Cmd-Tab or a Dock click activates an app on another Space, switch there with the fast switch. A table also names apps not to follow.",
+      "oneOf": [
+        { "type": "boolean" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean", "default": true, "description": "Follow app activations." },
+            "exclude-apps": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 },
+              "default": [],
+              "description": "Bundle IDs whose activation is not followed, such as a menu bar app whose popover counts as a window."
+            }
+          }
+        }
+      ]
+    },
+    "float-windows-without-fullscreen": {
+      "type": "boolean",
+      "default": true,
+      "description": "Float windows that can't go full screen, such as Finder's copy progress, About This Mac and Calculator. A `layout tiling` rule tiles one anyway."
+    },
+    "fullscreen-width": { "type": "number", "minimum": 0.1, "maximum": 1, "default": 1, "description": "The share of the width, inside the outer gaps, that a fullscreen window takes, centred. Lone windows use it unless lone-window-width is set. Display and workspace tables override it." },
+    "lone-window-width": { "type": "number", "minimum": 0.1, "maximum": 1, "description": "A lone window's centred share of the width inside the outer gaps. Workspace tables override display tables, which override this value. If unset everywhere, uses the resolved fullscreen-width." },
+    "scrolling": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The scrolling layout.",
+      "properties": {
+        "column-width": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 1,
+          "default": 0.49,
+          "description": "A new column's width as a share of the display. A lone column fills the display."
+        },
+        "center-focused-column": {
+          "type": "string",
+          "enum": ["never", "always", "on-overflow"],
+          "default": "never",
+          "description": "When focusing a column centres it on the display: never, always, or on-overflow, when it would not fit in view beside the column focus came from."
+        },
+        "preset-column-widths": {
+          "type": "array",
+          "items": { "type": "number", "minimum": 0.1, "maximum": 1 },
+          "default": [0.33333, 0.5, 0.66667],
+          "description": "The shares of the display `column-width next` and `column-width prev` step through, in any order. An empty list turns them off."
+        },
+        "peek": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 25,
+          "description": "Points of a scrolled-out window left on screen at the display's edge."
+        }
+      }
+    },
+    "master": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The master layout.",
+      "properties": {
+        "size": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 0.9,
+          "default": 0.6,
+          "description": "The master's share of the display inside the outer gaps while windows are stacked beside it. Hyprland calls it mfact."
+        },
+        "side": {
+          "type": "string",
+          "enum": ["left", "right", "center"],
+          "default": "left",
+          "description": "The side the master takes; the stack goes on the other. center puts the master in the middle with a stack on each side once two windows are stacked. Hyprland calls it orientation."
+        }
+      }
+    },
+    "accordion": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The accordion layout.",
+      "properties": {
+        "padding": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 30,
+          "description": "Maximum points by which neighbouring windows peek out; shrinks in narrow containers to leave content and respect recorded window minima."
+        },
+        "orientation": {
+          "type": "string",
+          "enum": ["auto", "keep"],
+          "default": "auto",
+          "description": "What a container's orientation becomes when it switches to accordion: auto runs along its longer side, keep keeps the orientation it had."
+        }
+      }
+    },
+    "gaps": { "$ref": "#/definitions/gaps" },
+    "display": {
+      "type": "object",
+      "description": "Overrides for one display, keyed by pattern: main, secondary, or a case-insensitive part of the display's name as `splay list-displays` prints it.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "gaps": { "$ref": "#/definitions/gaps" },
+          "fullscreen-width": { "type": "number", "minimum": 0.1, "maximum": 1, "default": 1, "description": "The share of the width a fullscreen window takes on this display. Lone windows use it unless lone-window-width is set." },
+          "lone-window-width": { "type": "number", "minimum": 0.1, "maximum": 1, "description": "A lone window's centred share on this display, over the top-level value. Workspace tables override it. If unset everywhere, uses the resolved fullscreen-width." }
+        }
+      }
+    },
+    "borders": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The border drawn around windows.",
+      "properties": {
+        "enabled": { "type": "boolean", "default": true, "description": "Draw a border around windows." },
+        "width": { "type": "number", "minimum": 0, "default": 4, "description": "Border width in points." },
+        "active-color": { "$ref": "#/definitions/color", "default": "#e1e3e4", "description": "Colour of the focused window's border." },
+        "inactive-color": { "$ref": "#/definitions/color", "default": "#494d64", "description": "Colour of other windows' borders." },
+        "order": {
+          "type": "string",
+          "enum": ["below", "above"],
+          "default": "below",
+          "description": "below draws the border directly below the window. above draws it above, as a ring that never covers the window's content or takes clicks."
+        },
+        "exclude-apps": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "default": [],
+          "description": "Bundle IDs whose windows get no border."
+        }
+      }
+    },
+    "focus-follows-mouse": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Focus the window under the pointer once the pointer rests on it.",
+      "properties": {
+        "enabled": { "type": "boolean", "default": false },
+        "delay-ms": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 100,
+          "description": "How long the pointer must rest on a window before it takes focus. 0 focuses as soon as the pointer stops."
+        },
+        "accordion-edges": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether resting on the peeking edge of an accordion child focuses it."
+        }
+      }
+    },
+    "swipe": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Opt-in trackpad swipe focus between tiled windows. Native swipes can also switch Space or open Mission Control/App Exposé before the last window.",
+      "properties": {
+        "enabled": { "type": "boolean", "default": false },
+        "space-switch": {
+          "enum": ["instant", "native"],
+          "default": "instant",
+          "description": "Instant switches Space past the last window once the fingers lift. Native passes the whole swipe to macOS, so a full, quick swipe can both focus and switch Space. On macOS 27+, instant falls back to native."
+        },
+        "vertical": {
+          "type": "boolean",
+          "default": false,
+          "description": "Swipes up and down focus windows below and above. Always passes the whole swipe to macOS, which can also open Mission Control or App Exposé before the last window, regardless of space-switch."
+        }
+      }
+    },
+    "animations": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Windows glide to their tiles instead of jumping. Off while macOS's Reduce Motion is on.",
+      "properties": {
+        "enabled": { "type": "boolean", "default": true },
+        "duration-ms": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000,
+          "default": 150,
+          "description": "Roughly how long a window takes to arrive. 0 jumps."
+        }
+      }
+    },
+    "drag": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Dragging a tiled window with the mouse.",
+      "properties": {
+        "placeholders": {
+          "type": "boolean",
+          "default": true,
+          "description": "While you drag a tiled window, outline the tile it came from and the tile it will swap with."
+        },
+        "split-trigger": {
+          "type": "string",
+          "enum": ["off", "hold", "alt", "ctrl", "cmd", "shift"],
+          "default": "off",
+          "description": "What makes a drop split the tile instead of swapping: hold to rest the pointer on it for split-delay-ms, or a modifier key to hold."
+        },
+        "split-delay-ms": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 500,
+          "description": "With split-trigger = 'hold', how long the pointer must rest on the tile before the drop splits it."
+        }
+      }
+    },
+    "modifiers": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Which key of each modifier pair bindings answer to. The other key types as usual.",
+      "properties": {
+        "alt": { "enum": ["both", "left", "right"], "default": "both", "description": "Which Option key is alt in bindings." },
+        "ctrl": { "enum": ["both", "left", "right"], "default": "both", "description": "Which Control key is ctrl in bindings." },
+        "cmd": { "enum": ["both", "left", "right"], "default": "both", "description": "Which Command key is cmd in bindings." },
+        "shift": { "enum": ["both", "left", "right"], "default": "both", "description": "Which Shift key is shift in bindings." }
+      }
+    },
+    "hooks": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "splay commands run on events. Shell goes through exec-and-forget.",
+      "properties": {
+        "startup": { "$ref": "#/definitions/hook", "description": "Once, when splay starts, after it has read the windows and displays." },
+        "workspace-changing": {
+          "$ref": "#/definitions/hook",
+          "description": "As soon as splay starts switching a display, and again when a burst of switches changes the target. exec-and-forget gets SPLAY_WORKSPACE (the target), SPLAY_PREV_WORKSPACE and SPLAY_DISPLAY."
+        },
+        "workspace-changed": {
+          "$ref": "#/definitions/hook",
+          "description": "When a display's workspace changes or a switch settles or gives up, not on intermediate Spaces. With follow-space-order, also after renumbering even if the visible number is unchanged. exec-and-forget gets SPLAY_WORKSPACE, SPLAY_PREV_WORKSPACE and SPLAY_DISPLAY."
+        },
+        "focus-changed": { "$ref": "#/definitions/hook", "description": "When the focused window changes, debounced by 50 ms." },
+        "mode-changed": { "$ref": "#/definitions/hook", "description": "When the binding mode changes, including back to main when the config reloads. exec-and-forget gets SPLAY_MODE and SPLAY_PREV_MODE." },
+        "display-changed": { "$ref": "#/definitions/hook", "description": "When a display connects or disconnects. exec-and-forget gets SPLAY_DISPLAYS and SPLAY_PREV_DISPLAYS, how many displays there are now and were before." }
+      }
+    },
+    "rules": {
+      "type": "array",
+      "description": "Rules for new windows. Every rule whose conditions all match runs, in order; for layout floating and layout tiling the last one wins.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["run"],
+        "properties": {
+          "app-id": { "type": "string", "minLength": 1, "description": "The app's bundle ID, e.g. com.apple.Safari." },
+          "app-id-regex": { "type": "string", "minLength": 1, "description": "Case-insensitive regex found anywhere in the app's bundle ID, e.g. ^com\\.apple\\. for every Apple app." },
+          "app-name": { "type": "string", "minLength": 1, "description": "Case-insensitive regex found anywhere in the app's name." },
+          "title": { "type": "string", "minLength": 1, "description": "Case-insensitive regex found anywhere in the window title." },
+          "window-identifier": { "type": "string", "minLength": 1, "description": "Case-insensitive regex found anywhere in AXIdentifier. An unavailable identifier never matches." },
+          "exclude-window-identifier": { "type": "string", "minLength": 1, "description": "Reject this rule when AXIdentifier matches this case-insensitive regex. Unavailable identifiers are not excluded." },
+          "kind": { "type": "string", "enum": ["normal", "dialog", "sheet", "panel"], "description": "The kind of window." },
+          "run": { "$ref": "#/definitions/commands", "description": "The command or commands to run for a matching window." }
+        }
+      }
+    },
+    "mode": {
+      "type": "object",
+      "description": "Key bindings, grouped in modes. splay starts in main; the `mode <name>` command switches.",
+      "additionalProperties": {
+        "type": "object",
+        "description": "Key combinations mapped to the command or commands they run.",
+        "propertyNames": { "$ref": "#/definitions/keyCombo" },
+        "additionalProperties": { "$ref": "#/definitions/binding" }
+      }
+    }
+  },
+  "definitions": {
+    "gaps": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Gaps in points. A side or axis left out keeps its default.",
+      "properties": {
+        "inner": {
+          "description": "Points between tiled windows: one value for both axes, or per axis.",
+          "oneOf": [
+            { "type": "integer", "minimum": 0 },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "horizontal": { "type": "integer", "minimum": 0, "description": "Between side-by-side windows." },
+                "vertical": { "type": "integer", "minimum": 0, "description": "Between stacked windows." }
+              }
+            }
+          ]
+        },
+        "outer": {
+          "description": "Points between tiled windows and the screen edge: one value, or per side.",
+          "oneOf": [
+            { "type": "integer", "minimum": 0 },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "top": { "type": "integer", "minimum": 0 },
+                "bottom": { "type": "integer", "minimum": 0 },
+                "left": { "type": "integer", "minimum": 0 },
+                "right": { "type": "integer", "minimum": 0 }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "color": {
+      "type": "string",
+      "pattern": "^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$",
+      "description": "A colour, '#rrggbb' or '#rrggbbaa'."
+    },
+    "command": {
+      "type": "string",
+      "pattern": "^\\s*(workspace|workspace-back-and-forth|move-window-to-workspace|move-window-to-display|focus|focus-monitor|move|join-with|resize|layout|workspace-layout|fullscreen|flatten-workspace-tree|balance-sizes|swap-with-master|retile|clear-minimum-sizes|mode|reload-config|enable|list-workspaces|list-windows|list-monitors|list-displays|list-modes|debug-state|exec-and-forget|center-column|column-width|maximize-column|focus-column)(\\s.*)?$",
+      "description": "A splay command, as `splay help` lists them: `workspace 3`, `layout floating`, `exec-and-forget open -a Safari`. move-window-to-workspace, move-window-to-display, layout and workspace-layout accept --window-id <id> to target a managed window on a numbered workspace."
+    },
+    "commands": {
+      "description": "A command or a list of commands, run in order.",
+      "oneOf": [
+        { "$ref": "#/definitions/command" },
+        { "type": "array", "minItems": 1, "items": { "$ref": "#/definitions/command" } }
+      ]
+    },
+    "binding": {
+      "description": "A command or list of commands, optionally excluded for exact app bundle IDs.",
+      "oneOf": [
+        { "$ref": "#/definitions/commands" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["command"],
+          "properties": {
+            "command": { "$ref": "#/definitions/commands", "description": "The command or commands to run." },
+            "exclude-apps": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 },
+              "description": "Exact bundle IDs in which this key is passed through to the app."
+            }
+          }
+        }
+      ]
+    },
+    "workspaceSettings": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tiling": { "type": "boolean" },
+        "layout": { "type": "string", "enum": ["tiles", "dwindle", "accordion", "fixed", "scrolling"] },
+        "columns": { "type": "integer", "minimum": 1, "default": 1, "description": "Reserved columns for a fixed layout." },
+        "rows": { "type": "integer", "minimum": 1, "default": 1, "description": "Reserved rows for a fixed layout." },
+        "expand": { "type": "string", "enum": ["columns", "rows", "accordion"], "default": "columns", "description": "Where overflow windows go when every fixed cell is full." },
+        "fullscreen-width": { "type": "number", "minimum": 0.1, "maximum": 1, "default": 1, "description": "The share of the width a fullscreen window takes on this workspace while it is on this display. Lone windows use it unless lone-window-width is set." },
+        "lone-window-width": { "type": "number", "minimum": 0.1, "maximum": 1, "description": "A lone window's centred share while this workspace is on this display. Omitted values come from the workspace, then display and top-level settings, else the resolved fullscreen-width." }
+      },
+      "if": { "required": ["layout"], "properties": { "layout": { "enum": ["tiles", "dwindle", "accordion", "scrolling"] } } },
+      "then": { "not": { "anyOf": [ { "required": ["columns"] }, { "required": ["rows"] }, { "required": ["expand"] } ] } }
+    },
+    "hook": {
+      "description": "A command or a list of commands, run in order. May be empty.",
+      "oneOf": [
+        { "$ref": "#/definitions/command" },
+        { "type": "array", "items": { "$ref": "#/definitions/command" } }
+      ]
+    },
+    "keyCombo": {
+      "type": "string",
+      "pattern": "^((alt|ctrl|cmd|shift|hyper|meh)-)*([a-z0-9]|f[1-9]|f1[0-9]|f20|keypad-([0-9]|clear|decimal|divide|enter|equal|minus|multiply|plus)|section|minus|equal|left-bracket|right-bracket|backslash|semicolon|quote|comma|period|slash|backtick|page-up|page-down|home|end|forward-delete|space|enter|esc|backspace|tab|left|down|up|right)$",
+      "description": "Zero or more modifiers (alt, ctrl, cmd, shift, or the shorthands hyper and meh) and one key name, joined by '-': alt-shift-h, ctrl-left, alt-page-up, hyper-1, f5."
+    }
+  }
+}

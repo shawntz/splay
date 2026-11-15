@@ -1,7 +1,8 @@
+import DinkyConfig
 import Foundation
 
-/// `~/Library/Logs/dinky.log`, where the app writes its log when it has no terminal (launched by Finder or at login).
-let logURL = FileManager.default.homeDirectoryForCurrentUser.appending(path: "Library/Logs/dinky.log")
+/// `Brand.logPath` in the home folder, where the app writes its log when it has no terminal (launched by Finder or at login).
+let logURL = FileManager.default.homeDirectoryForCurrentUser.appending(path: Brand.logPath)
 
 /// Whether stdout is closed or /dev/null, as launchd leaves it for an app it starts. A terminal, a pipe or a
 /// redirect to a file all count as someone reading.
@@ -26,7 +27,7 @@ guard let command = args.first else {
         }
         exit(runApp())
     }
-    fputs("usage: dinky <command> (see dinky help) | app\n", stderr)
+    fputs("usage: \(Brand.name) <command> (see \(Brand.name) help) | app\n", stderr)
     exit(64)
 }
 
@@ -38,8 +39,7 @@ case "debug": exit(runDebug(rest))
 case "doctor": exit(runDoctor(rest))
 case "help", "--help", "-h": exit(runHelp())
 case "version", "--version", "-v":
-    let info = Bundle.main.infoDictionary
-    print("dinky \(info?["CFBundleShortVersionString"] ?? "dev") (\(info?["CFBundleVersion"] ?? "0"))")
+    print(versionLine(executable: Bundle.main.executableURL, fallback: Bundle.main.infoDictionary))
     exit(0)
 default: exit(runCli(args))
 }

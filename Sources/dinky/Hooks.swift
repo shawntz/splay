@@ -1,3 +1,4 @@
+import DinkyConfig
 import Foundation
 
 // The config's `[hooks]`: `workspace-changing` when dinky starts or retargets a switch, `workspace-changed`
@@ -24,7 +25,7 @@ final class Hooks {
         SpaceSwitcher.shared.onTarget = { [weak self] uuid, target in self?.switchTargeted(uuid, target) }
         state.coordinator?.onFocusChange = { [weak self] in self?.focusChanged() }
         state.hotkeys.onModeChange = { mode, previous in
-            run(AppState.shared.config.hooks.modeChanged, env: ["DINKY_MODE": mode, "DINKY_PREV_MODE": previous])
+            run(AppState.shared.config.hooks.modeChanged, env: [Brand.envPrefix + "MODE": mode, Brand.envPrefix + "PREV_MODE": previous])
         }
         run(state.config.hooks.startup)
     }
@@ -36,7 +37,7 @@ final class Hooks {
         guard now != connected else { return }
         let previous = connected.count
         connected = now
-        run(AppState.shared.config.hooks.displayChanged, env: ["DINKY_DISPLAYS": "\(now.count)", "DINKY_PREV_DISPLAYS": "\(previous)"])
+        run(AppState.shared.config.hooks.displayChanged, env: [Brand.envPrefix + "DISPLAYS": "\(now.count)", Brand.envPrefix + "PREV_DISPLAYS": "\(previous)"])
     }
 
     /// Announces where a dinky switch is going before it lands, so a bar can show it at once.
@@ -49,7 +50,7 @@ final class Hooks {
 
     /// Runs workspace hooks with the numbers `exec-and-forget` passes on; `display` is 0-based.
     private func runWorkspaceHooks(_ commands: [String], workspace: String, previous: String, display: Int) {
-        run(commands, env: ["DINKY_WORKSPACE": workspace, "DINKY_PREV_WORKSPACE": previous, "DINKY_DISPLAY": "\(display + 1)"])
+        run(commands, env: [Brand.envPrefix + "WORKSPACE": workspace, Brand.envPrefix + "PREV_WORKSPACE": previous, Brand.envPrefix + "DISPLAY": "\(display + 1)"])
     }
 
     private func focusChanged() {
