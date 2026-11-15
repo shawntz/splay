@@ -6,7 +6,7 @@ url: https://shawntz.github.io
 baseurl: /splay
 repository_url: https://github.com/shawntz/splay
 # The latest release. scripts/release.sh sets it.
-version: "0.1"
+version: "0.2"
 # No theme: the layouts and stylesheet are this folder's own.
 theme: null
 markdown: kramdown
