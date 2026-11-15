@@ -50,8 +50,8 @@ on niri's: preset widths, an exact width, maximize, centring, and jumping to the
 column. Thank you, Mikkel.
 
 > [!NOTE]
-> <!-- STATUS: update after the first real run -->
-> Splay builds and passes its tests on macOS 27, but nobody has run it on a real desktop yet.
+> Splay builds and passes its tests on macOS 27. So far it has run on one Mac, its author's, starting
+> on 2026-11-15.
 > There are no releases, so you build it from source. [Status and limits](#status-and-limits) has
 > the details.
 
@@ -315,7 +315,7 @@ There is no download, Homebrew cask or updater. You build Splay from this reposi
 
 You need:
 
-- macOS 15 or later. That is the deployment target. Splay has only been built and unit-tested on
+- macOS 15 or later. That is the deployment target. Splay has only been built, tested and run on
   macOS 27.
 - Xcode 26 or later, which itself needs macOS 15.6. Xcode's `actool` compiles the app icon, so the
   Command Line Tools alone build and test the code but can't make the app. If `xcode-select -p`

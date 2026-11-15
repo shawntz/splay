@@ -6,7 +6,7 @@ url: https://shawntz.github.io
 baseurl: /splay
 repository_url: https://github.com/shawntz/splay
 # One sentence on the landing page. Keep it in step with "Status" in start.md.
-status: Early. There are no releases, so you build it from source. Built and unit-tested on macOS 27, and not yet run on a real desktop.
+status: Early. There are no releases, so you build it from source. Unit-tested on macOS 27, and so far run on one Mac.
 # No theme: the layouts and stylesheet are this folder's own.
 theme: null
 markdown: kramdown

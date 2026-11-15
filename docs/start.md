@@ -33,8 +33,8 @@ tiles by being moved there, frame by frame, and a column scrolled out of view
 hangs off the display edge, since nothing can clip it.
 
 Status: an early personal fork, built from source. There are no releases. So
-far it has been built and unit-tested on macOS 27, and it has not yet been run
-on a real desktop.
+far it has been built and unit-tested on macOS 27, and run on one Mac, its
+author's.
 
 > **Private APIs.** macOS has no public way to switch Spaces quickly or move a
 > window between them, so Splay, like Dinky, uses a synthetic Dock swipe and a
@@ -45,7 +45,7 @@ on a real desktop.
 ## Requirements
 
 - The build targets macOS 15 or later, on Apple silicon or Intel. Splay has
-  been built and unit-tested on macOS 27 only. macOS 15 to 26 and Intel Macs,
+  been built, unit-tested and run on macOS 27 only. macOS 15 to 26 and Intel Macs,
   which run macOS up to 26, are untested.
 - To build the app, Xcode 26 or later, which itself needs macOS 15.6, because
   Xcode's `actool` compiles the app icon. The Command Line Tools of the same
