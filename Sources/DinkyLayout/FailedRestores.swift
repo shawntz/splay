@@ -60,11 +60,13 @@ public enum RestoreProblem: Equatable, Sendable, CustomStringConvertible {
     case noAnswer(seconds: Int)
     case unreadable(wanted: CGRect)
     case wrongFrame(got: CGRect, wanted: CGRect)
+    /// Splay: read back as nothing while out of Accessibility's reach, so tried again (see RestoreKeeps).
+    case notShowing(wanted: CGRect)
 
     /// Whether the window stays journaled for the next restore.
     public var retries: Bool {
         switch self {
-        case .displayGone, .spaceMoveFailed, .didNotArrive, .noAnswer: true
+        case .displayGone, .spaceMoveFailed, .didNotArrive, .noAnswer, .notShowing: true
         case .closed, .movedByHand, .spaceGone, .unreadable, .wrongFrame: false
         }
     }
@@ -80,6 +82,7 @@ public enum RestoreProblem: Equatable, Sendable, CustomStringConvertible {
         case .noAnswer(let seconds): "no answer within \(seconds) s"
         case .unreadable(let wanted): "unreadable, wanted \(wanted)"
         case .wrongFrame(let got, let wanted): "frame \(got), wanted \(wanted)"
+        case .notShowing(let wanted): "out of reach for now, wanted \(wanted)"
         }
     }
 }

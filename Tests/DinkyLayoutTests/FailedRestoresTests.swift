@@ -48,6 +48,12 @@ struct RestoreProblemTests {
         #expect(RestoreProblem.displayGone.retries)
         #expect(RestoreProblem.spaceMoveFailed.retries)
         #expect(RestoreProblem.didNotArrive.retries)
+        #expect(RestoreProblem.notShowing(wanted: rect(0, 0, 800, 600)).retries, "it may be in reach next time")
+    }
+
+    @Test func `A window out of reach says so, with the frame it wanted`() {
+        #expect("\(RestoreProblem.notShowing(wanted: rect(0, 33, 1512, 949)))"
+                == "out of reach for now, wanted (0.0, 33.0, 1512.0, 949.0)")
     }
 
     @Test func `A window that answers wrongly every time is not kept for the next launch`() {

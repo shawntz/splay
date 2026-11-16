@@ -16,6 +16,8 @@ as it stands, and lists Dinky's releases.
 ## Unreleased
 
 - `brew install --cask shawntz/tap/splay` installs Splay with Homebrew and links the `splay` command.
+- A window Splay cannot reach when it quits, such as one closed with Cmd-W that its app keeps around, is no longer forgotten. Splay keeps its original place and puts it back at a later quit, once the window is open again. Before, it stayed at its tiled spot for good.
+- The menu's Restore item, and `splay recover`, count only the windows a restore can reach now.
 
 ## 0.2
 

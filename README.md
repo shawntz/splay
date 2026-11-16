@@ -70,8 +70,8 @@ Updates is in its menu. When Splay finds one on its own, `↑` appears after the
 the menu bar.
 
 Splay asks for Accessibility on first launch. Once you allow it, it tiles every open window into
-the strip, and Cmd-Left and Cmd-Right stop reaching apps. Quit from the menu bar and the windows on
-the Desktops you can see go back where they were.
+the strip, and Cmd-Left and Cmd-Right stop reaching apps. Quit from the menu bar and every open
+window goes back where it was.
 [Get started](https://shawntz.github.io/splay/start/) covers the first run, the two macOS settings
 Splay asks about, and how to remove it.
 

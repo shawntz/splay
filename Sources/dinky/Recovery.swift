@@ -34,7 +34,7 @@ final class Recovery {
     private static let answerTimeout: TimeInterval = 3
 
     /// Windows left behind by a session that crashed, still journaled.
-    var recoverable: Int { carried.filter { entries[$0] != nil }.count }
+    var recoverable: Int { Self.reachable(carried.compactMap { entries[$0] }) }  // Splay: RecoveryKeeps.swift
 
     private let launched = Date()
     private var entries: [UInt32: Entry] = [:]
@@ -100,6 +100,7 @@ final class Recovery {
         var results = writeFrames(live)
         let moved = moveBack(live, problems: &problems)
         for (id, result) in writeFrames(live.filter { moved.contains($0.id) }) { results[id] = result }
+        keepOutOfReach(live, results: &results, problems: &problems)  // Splay: RecoveryKeeps.swift
         for entry in live where results[entry.id]?.matched != true && problems[entry.id] == nil {
             problems[entry.id] = switch results[entry.id] {
             case nil: .noAnswer(seconds: Int(Self.answerTimeout))

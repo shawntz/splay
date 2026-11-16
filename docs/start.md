@@ -270,11 +270,11 @@ if Dinky turned the Space switching off, it stays off and Splay doesn't ask.
 ## Quit and restore
 
 Quit Splay from its menu, `kill` it, log out, or close the terminal of an
-attached run such as `just run`, and each window on a Desktop that is showing
-goes back to the frame and Space it had before Splay tiled it. A window on a
-Desktop that is not showing stays where Splay put it, because macOS only lets
-Splay move windows on a Desktop it can see, and Splay forgets where that window
-was. `splay enable off`, or Enabled in the
+attached run such as `just run`, and every window Splay can reach goes back to
+the frame and Space it had before Splay tiled it. One kind it cannot reach is a
+window its app closed but kept, as Slack, Spotify and other apps do on Cmd-W.
+Splay keeps that window's original place in its journal and puts it back at a
+later quit, once the window is open again. `splay enable off`, or Enabled in the
 menu, does the same and keeps Splay running with tiling, borders and key
 bindings off; `splay enable on` tiles again. A crash, `kill -9` or Force Quit
 puts nothing back. For those, see [Recovery](commands.md#recovery).
@@ -287,7 +287,7 @@ Splay turned off, so their windows don't animate against it, keep it off.
 
 1. If `start-at-login = true`, set it to `false` and save while Splay runs,
    or turn Splay off in System Settings > General > Login Items & Extensions.
-2. Quit Splay from its menu. The windows on the Desktops you can see go back. Before it has
+2. Quit Splay from its menu. Every open window goes back. Before it has
    Accessibility it has no menu, so close its window, which quits it.
 3. Delete `/Applications/Splay.app` or `build/Splay.app`, and `~/.local/bin/splay`.
    With Homebrew, run `brew uninstall --cask splay` instead. With `--zap` it also
@@ -321,9 +321,10 @@ Dinky, if you use it, can start again once Splay has quit.
   size. Splay remembers each app's minimum size; Clear Saved Minimum Sizes in
   the menu forgets them.
 - macOS cannot focus a window on another Space, so Splay switches first.
-- Quitting puts back only the windows on a Desktop that is showing. The rest
-  stay where Splay tiled them, and one parked off an edge stays there until
-  you drag it back or start Splay again.
+- A window closed with Cmd-W that its app keeps around stays where Splay last
+  had it while it is closed. Reopened while Splay runs, it is tiled again.
+  Reopened after Splay has quit, it comes back at that last tiled spot, which
+  can be mostly off an edge. Start Splay, or drag the window back.
 - The order of a strip is not saved. Quitting puts the windows back, and the
   next start lines them up left to right as they then stand. Columns parked off
   an edge share that edge, so after a crash, or when a hidden app comes back,
