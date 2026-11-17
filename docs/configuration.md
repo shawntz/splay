@@ -22,9 +22,10 @@ file is left alone, with the read error shown in the menu.
 - The config Splay writes names the [JSON Schema](schemas/splay.json) on its
   first line, `#:schema https://shawntz.github.io/splay/schemas/splay.json`.
   Editors that read Taplo's `#:schema` line, such as Zed or VS Code with Even
-  Better TOML, validate and complete the file against it. Splay never rewrites
-  a config that exists, so one written by Splay 0.1 has no such line; add it at
-  the top by hand.
+  Better TOML, validate and complete the file against it. A config written by
+  Splay 0.1 has no such line. Add it at the top by hand. Splay also adds it
+  when it [moves the keys](#when-a-release-moves-keys) of a file that still
+  begins with the comment 0.1 wrote.
 
 ## Top level
 
@@ -582,6 +583,33 @@ modifiers and `meh` all but `cmd`, so `hyper-1` is `alt-ctrl-cmd-shift-1`.
 The default `alt-` bindings take over the characters Option types with those
 keys. On a German layout Option-L types @. Set `[modifiers] alt = 'left'` to
 type them with the right Option key.
+
+### When a release moves keys
+
+The bindings exist only in your file, so a release that changes a default key
+changes nothing for a file that already exists. Each time Splay starts, it
+compares your file with the defaults it has shipped. If the file still binds a
+key the way an older default did, and the default has since moved it, a window
+lists each such command with its new keys and the keys your file has, and asks.
+
+- Use the New Keys changes those keys in `splay.toml`. The file as it was
+  stays beside it under a name such as `splay.toml.before-0.6`.
+- Keep My Keys leaves the file alone. Splay does not ask about those keys
+  again on that Mac. While it can move them, its menu has Use Splay's New Keys.
+- Closing the window without an answer asks again at the next start.
+
+Splay changes only what it wrote. It renames a moved key where your file binds
+it as an older default did, and brings up to date the comments it wrote that
+you have not changed. A key you removed stays removed, and a key you gave
+another command stays yours. A key the default added beside a moved one, as it
+added Alt-H and Alt-L, comes with it unless your file already uses one of
+them. Settings, rules and your own bindings stay as they are.
+
+Splay changes nothing, and says why once, when your file has its own line for
+a moved key, such as one with `exclude-apps`, or already uses one of the new
+keys. It does not ask about a file that has the current default's comments,
+since the older keys in it were put back by hand. `splay doctor` lists the
+older keys whenever the window would.
 
 ## Default config
 

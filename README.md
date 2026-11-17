@@ -119,7 +119,8 @@ back to an app, list the app under `exclude-apps`. To keep the right Option key 
 ## Configure
 
 Splay writes `~/.config/splay/splay.toml` on first run, with every setting and binding in it, and
-applies changes when you save. Edit its `[scrolling]` table, and add rules below it:
+applies changes when you save. When a release moves default keys, Splay asks before it changes your
+file. Edit its `[scrolling]` table, and add rules below it:
 
 ```toml
 [scrolling]

@@ -1,5 +1,6 @@
 // The config dinky writes on first run. Apart from the rules and bindings, which it spells out, its
 // values are the built-in defaults, so a key left out of a user's file means what this file says.
+// A change to this text needs the text it replaces kept in ShippedDefaults.swift. RELEASING.md says how.
 
 extension Config {
     public static let defaultTOML = """
