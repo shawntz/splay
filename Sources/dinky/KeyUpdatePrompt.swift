@@ -63,8 +63,16 @@ enum KeyUpdateText {
         switch check {
         case .offer(let update, _):
             var paragraphs = ["\(use) changes these keys in \(file). The file as it is now stays in the same folder, as \(copy)."]
+            let arrived = update.moves.flatMap { move in move.now.filter { !move.was.contains($0) } }
+            // What the new keys take from apps. A key Splay binds never reaches the app in front.
+            var taking = "Apps no longer get the new keys while \(Brand.displayName) runs."
+            for (keys, use) in knownUses {
+                let found = arrived.filter { keys.contains($0.description) }
+                if !found.isEmpty { taking += " " + use(list(found.map(\.symbols))) }
+            }
+            paragraphs.append(taking + " To leave a key to an app, add exclude-apps to its line in \(file).")
             // Keys that come new and that Option types a character with, such as @ on a German layout.
-            let typed = update.moves.flatMap { move in move.now.filter { !move.was.contains($0) && $0.typesWithOption } }
+            let typed = arrived.filter(\.typesWithOption)
             if !typed.isEmpty {
                 let one = typed.count == 1
                 paragraphs.append("\(list(typed.map(\.symbols))) will no longer type \(one ? "a character" : "characters") in apps. "
@@ -78,12 +86,19 @@ enum KeyUpdateText {
         }
     }
 
-    /// Why a file was left alone, as the start of a sentence: `splay.toml has its own line for alt-left`.
+    /// Apps known to use a key themselves, so the window can say what moving to it costs. The keys are given
+    /// as the config spells them, and the sentence takes them as symbols.
+    private static let knownUses: [(keys: [String], use: (String) -> String)] = [
+        (["alt-cmd-left", "alt-cmd-right"],
+         { "Chrome and Firefox switch tabs with \($0), and iTerm2 and Ghostty move between panes with them." }),
+    ]
+
+    /// Why a file was left alone, as the start of a sentence: `splay.toml lists exclude-apps for alt-left`.
     private static func reason(_ update: KeyUpdate, file: String) -> String {
         var parts: [String] = []
-        if !update.own.isEmpty { parts.append("has its own \(update.own.count == 1 ? "line" : "lines") for \(list(update.own))") }
-        if !update.taken.isEmpty { parts.append("already uses \(list(update.taken))") }
-        return parts.isEmpty ? "\(file) writes these keys in a way \(Brand.displayName) can't edit" : "\(file) \(parts.joined(separator: " and "))"
+        if !update.own.isEmpty { parts.append("lists exclude-apps for \(list(update.own))") }
+        if !update.taken.isEmpty { parts.append("already binds \(list(update.taken))") }
+        return parts.isEmpty ? "\(file) binds these keys in a form that can't be edited for you" : "\(file) \(parts.joined(separator: " and "))"
     }
 
     /// What `doctor` says about a config that still has an older default's keys; nil for any other config.
@@ -91,7 +106,8 @@ enum KeyUpdateText {
     static func doctorNote(_ check: KeyUpdateCheck, file: String, inMenu: Bool) -> String? {
         switch check {
         case .offer(let update, _):
-            "\(file) has keys from an older default: \(old(update))." + (inMenu ? " \(menuItem.dropLast()) in the app's menu moves them." : "")
+            "\(file) has keys from an older default: \(old(update))."
+                + (inMenu ? " To move them, choose \(menuItem.dropLast()) in \(Brand.displayName)'s menu." : "")
         case .manual(let update):
             "\(file) has keys from an older default: \(old(update)). The app does not move them, because \(reason(update, file: file))."
         case .none, .unreadable:
@@ -129,6 +145,15 @@ struct KeyUpdateAnswers {
     func add(_ id: String) {
         guard !has(id) else { return }
         store.set((store.stringArray(forKey: Self.key) ?? []) + [id], forKey: Self.key)
+    }
+
+    /// Whether every part of an update has been answered.
+    func cover(_ update: KeyUpdate) -> Bool {
+        update.parts.allSatisfy(has)
+    }
+
+    func add(_ update: KeyUpdate) {
+        update.parts.forEach(add)
     }
 }
 
@@ -191,10 +216,14 @@ final class KeyUpdatePrompt: NSObject, NSWindowDelegate {
 
     /// Asks once the app is up. While another window of the app's is open, such as the one that asks for
     /// Accessibility or Sparkle's, this one waits, so neither covers the other.
-    func askAtLaunch(after seconds: Double = 1) {
+    func askAtLaunch(after seconds: Double = 1, waits: Int = 30) {
         DispatchQueue.main.asyncAfter(deadline: .now() + seconds) { [self] in
-            let busy = NSApp.windows.contains { $0.isVisible && $0.styleMask.contains(.titled) && $0 !== window }
-            if busy { askAtLaunch(after: 2) } else { askIfNew() }
+            // A window among ordinary windows and dialogs. The menu bar item's own window is not one.
+            let busy = NSApp.windows.contains {
+                $0.isVisible && $0.styleMask.contains(.titled) && $0.level.rawValue <= NSWindow.Level.modalPanel.rawValue && $0 !== window
+            }
+            // For a minute at most, so a window that is there to stay cannot keep this one from ever showing.
+            if busy, waits > 0 { askAtLaunch(after: 2, waits: waits - 1) } else { askIfNew() }
         }
     }
 
@@ -202,10 +231,10 @@ final class KeyUpdatePrompt: NSObject, NSWindowDelegate {
     func askIfNew() {
         guard let check = current()?.check else { return }
         switch check {
-        case .offer(let update, _) where !answers.has(update.id):
+        case .offer(let update, _) where !answers.cover(update):
             show(check, update, asked: false)
-        case .manual(let update) where !answers.has(update.id):
-            answers.add(update.id)
+        case .manual(let update) where !answers.cover(update):
+            answers.add(update)
             show(check, update, asked: false)
         default:
             break
@@ -241,10 +270,22 @@ final class KeyUpdatePrompt: NSObject, NSWindowDelegate {
     // MARK: Window
 
     @objc private func useNewKeys() {
-        // The file may have been saved while the window was open. If what would move has changed, show that.
+        // The file may have been saved while the window was open. If what would move has changed, or the file
+        // can no longer be changed, show that and write nothing yet.
         read = nil
-        guard let check = current()?.check, case .offer(let update, _) = check else { return close() }
-        guard update == asking else { return show(check, update, asked: true) }
+        guard let check = current()?.check else { return close() }
+        guard case .offer(let update, _) = check, update == asking else {
+            switch check {
+            case .offer(let now, _):
+                show(check, now, asked: true)
+            case .manual(let now):
+                answers.add(now)
+                show(check, now, asked: true)
+            case .none, .unreadable:
+                close()
+            }
+            return
+        }
         do {
             let copy = try apply()
             let keys = update.moves.flatMap(\.was).count
@@ -258,7 +299,7 @@ final class KeyUpdatePrompt: NSObject, NSWindowDelegate {
     }
 
     @objc private func keepKeys() {
-        if let asking { answers.add(asking.id) }
+        if let asking { answers.add(asking) }
         close()
     }
 
@@ -287,8 +328,10 @@ final class KeyUpdatePrompt: NSObject, NSWindowDelegate {
         if case .offer = check {
             buttons = [button(KeyUpdateText.use, #selector(useNewKeys)), button(KeyUpdateText.keep, #selector(keepKeys))]
         }
+        // The name the old file will be kept under, which has a number on it when that name is in use.
+        let copy = ConfigFile.copyName(for: url, holding: current()?.data ?? Data(), label: version)
         return Self.content(heading: KeyUpdateText.heading,
-                            paragraphs: [KeyUpdateText.intro] + KeyUpdateText.closing(check, file: file, copy: "\(file).before-\(version)"),
+                            paragraphs: [KeyUpdateText.intro] + KeyUpdateText.closing(check, file: file, copy: copy),
                             rows: KeyUpdateText.rows(update), buttons: buttons + [button(KeyUpdateText.changes, #selector(showChanges))],
                             returnPressesFirst: asked)
     }

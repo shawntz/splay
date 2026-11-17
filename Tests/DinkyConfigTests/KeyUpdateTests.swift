@@ -282,7 +282,8 @@ struct KeyUpdateTests {
         #expect(main[try KeyCombo("alt-cmd-left")] == nil)
         #expect(main[try KeyCombo("alt-h")] == nil)
         #expect(main[try KeyCombo("alt-cmd-right")]?.commands == ["focus right"])
-        #expect(main[try KeyCombo("alt-l")]?.commands == ["focus right"])
+        // Alt-H and Alt-L come as a pair with both arrows. With only one arrow moved, neither comes.
+        #expect(main[try KeyCombo("alt-l")] == nil)
         // With all four given away, the file has no older default key left.
         for (key, command) in [("alt-right", "focus right"), ("alt-home", "focus-column first"), ("alt-end", "focus-column last")] {
             text = text.replacingOccurrences(of: "\(key) = '\(command)'", with: "\(key) = 'retile'")
@@ -394,6 +395,20 @@ struct KeyUpdateTests {
         #expect(whole.text.contains(newComment) && !whole.text.contains(oldComment))
     }
 
+    /// A file put together by hand from two defaults: 0.2's comment kept as a note below 0.4's keys and comment.
+    @Test func `Two older comment blocks in one file do not both become the new one`() throws {
+        let older = try shipped("0.2").components(separatedBy: "\n")
+        let start = try #require(older.firstIndex { $0.hasPrefix("# Cmd-Left and Cmd-Right walk the strip") })
+        let block = Array(older[start..<start + 4])
+        #expect(block.allSatisfy { $0.hasPrefix("#") })
+        let text = try shipped("0.4") + "\n" + block.joined(separator: "\n") + "\n"
+        let result = try #require(offer(text))
+        let newComment = "# Alt-Cmd-Left and Alt-Cmd-Right walk the strip, as Alt-H and Alt-L do, so apps no longer get these keys."
+        #expect(result.text.components(separatedBy: "\n").filter { $0 == newComment }.count == 1)
+        #expect(result.text.hasSuffix("\n" + block.joined(separator: "\n") + "\n"))
+        #expect(try Config.parse(result.text) == Config.default)
+    }
+
     @Test func `A comment block the file has twice is left as it is`() throws {
         let lines = try shipped("0.4").components(separatedBy: "\n")
         let start = try #require(lines.firstIndex { $0.hasPrefix("# Alt-Left and Alt-Right walk the strip") })
@@ -488,6 +503,9 @@ struct KeyUpdateTests {
             return
         }
         #expect(all.id != some.id)
+        // Each command's move has its own name, and a file with fewer of them has a part of the same names.
+        #expect(all.parts.count == 4 && some.parts.count == 3)
+        #expect(Set(some.parts).isSubset(of: Set(all.parts)))
         func left(_ key: String, _ command: String) throws -> KeyUpdate {
             let text = try shipped("0.4").replacingOccurrences(of: "\(key) = '\(command)'", with: "\(key) = { command = '\(command)', exclude-apps = ['a.b'] }")
             guard case .manual(let update) = Config.keyUpdate(for: text) else { throw ConfigError("expected no offer") }
@@ -588,6 +606,7 @@ struct KeyUpdateTests {
         }
         #expect(first.id == second.id)
         #expect(first.id == "main:alt-a>alt-b")
+        #expect(first.parts == ["main:alt-a>alt-b"])
     }
 
     @Test func `A config with its comments removed still shows its age by its keys`() throws {

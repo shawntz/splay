@@ -134,6 +134,48 @@ struct ConfigFileTests {
         #expect(try names(in: dir) == ["splay.toml"])
     }
 
+    private func run(_ arguments: String...) throws -> Int32 {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: arguments[0])
+        process.arguments = Array(arguments.dropFirst())
+        try process.run()
+        process.waitUntilExit()
+        return process.terminationStatus
+    }
+
+    /// An access list that forbids deleting the config also forbids renaming a new file over it. The list is
+    /// copied onto the new file with the config's other attributes, and must not keep that file from going.
+    @Test func `A config that may not be deleted is left as it was, with no other file made`() throws {
+        let dir = try directory()
+        let url = dir.appending(path: "splay.toml")
+        defer {
+            for name in (try? names(in: dir)) ?? [] { _ = try? run("/bin/chmod", "-N", dir.appending(path: name).path) }
+            try? FileManager.default.removeItem(at: dir)
+        }
+        try "old\n".write(to: url, atomically: false, encoding: .utf8)
+        #expect(try run("/bin/chmod", "+a", "everyone deny delete", url.path) == 0)
+        let failure = #expect(throws: ConfigFile.Failure.self) {
+            try ConfigFile.replace(url, with: "new\n", expecting: Data("old\n".utf8), label: "0.6")
+        }
+        #expect(failure?.description == "Splay can't replace splay.toml. macOS says \"Permission denied\". Nothing was written.")
+        #expect(try read(url) == "old\n")
+        #expect(try names(in: dir) == ["splay.toml"])
+    }
+
+    @Test func `The name the copy will get is known beforehand`() throws {
+        let dir = try directory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let url = dir.appending(path: "splay.toml")
+        try "old\n".write(to: url, atomically: false, encoding: .utf8)
+        #expect(ConfigFile.copyName(for: url, holding: Data("old\n".utf8), label: "0.6") == "splay.toml.before-0.6")
+        // The name holds another text already, so the copy gets the next one.
+        try "older\n".write(to: dir.appending(path: "splay.toml.before-0.6"), atomically: false, encoding: .utf8)
+        #expect(ConfigFile.copyName(for: url, holding: Data("old\n".utf8), label: "0.6") == "splay.toml.before-0.6-2")
+        #expect(ConfigFile.copyName(for: url, holding: Data("older\n".utf8), label: "0.6") == "splay.toml.before-0.6")
+        let copy = try ConfigFile.replace(url, with: "new\n", expecting: Data("old\n".utf8), label: "0.6")
+        #expect(copy.lastPathComponent == "splay.toml.before-0.6-2")
+    }
+
     @Test func `A name the copy would take that is a link to nothing is passed over`() throws {
         let dir = try directory()
         defer { try? FileManager.default.removeItem(at: dir) }

@@ -13,7 +13,8 @@ import Foundation
 //   type one.
 // - An older key is one the file binds exactly as that release, or a later one before the current, did, and
 //   that the current default has since moved. It moves only when its new key is free. A line the user removed
-//   stays removed, and a key the user gave another command stays theirs.
+//   stays removed, and a key the user gave another command stays theirs. Keys the default added beside the
+//   moved ones, as alt-h and alt-l beside the arrows, come only when all of those moved and none is in use.
 // - A file that binds one of the keys involved its own way gets no change at all, so a pair such as focus left
 //   and focus right is never split between old and new keys. The app says so instead.
 // - Only binding lines change, and the comment blocks a default rewrote when the file still has them whole. A
@@ -33,8 +34,11 @@ public struct KeyMove: Equatable {
 }
 
 public struct KeyUpdate: Equatable {
-    /// Names this exact set of changes, whatever release finds it, so an answer to it can be remembered.
+    /// Names this exact set of changes, whatever release finds it.
     public var id: String
+    /// One name per command's move, so an answer is remembered for each. Someone who kept four keys and later
+    /// removes one of them has still answered for the other three.
+    public var parts: [String]
     /// The commands whose older keys the file has, each with those keys and the keys the default gives it now.
     public var moves: [KeyMove]
     /// Older keys the file binds its own way, to the same command with apps excluded: `alt-left`, or
@@ -45,7 +49,7 @@ public struct KeyUpdate: Equatable {
 }
 
 public enum KeyUpdateCheck: Equatable {
-    /// The file has no keys an older default wrote, or it was never a copy of a default.
+    /// The file has no keys an older default wrote, or holds no line of any default, or has seen the current one.
     case none
     /// The file has older default keys, and `text` is the file with them moved.
     case offer(KeyUpdate, text: String)
@@ -79,12 +83,12 @@ extension Config {
         guard !plan.edits.isEmpty || !plan.own.isEmpty || !plan.taken.isEmpty else { return .none }
         guard plan.own.isEmpty, plan.taken.isEmpty else {
             let id = "own \(plan.own.joined(separator: ",")) taken \(plan.taken.joined(separator: ","))"
-            return .manual(KeyUpdate(id: id, moves: plan.heldMoves, own: plan.own, taken: plan.taken))
+            return .manual(KeyUpdate(id: id, parts: [id], moves: plan.heldMoves, own: plan.own, taken: plan.taken))
         }
         let wanted = plan.wanted
         let moves = keyMoves(from: user, to: wanted, order: current)
-        let update = KeyUpdate(id: moves.map { "\($0.mode):\(names($0.was))>\(names($0.now))" }.joined(separator: " "),
-                               moves: moves, own: [], taken: [])
+        let parts = moves.map { "\($0.mode):\(names($0.was))>\(names($0.now))" }
+        let update = KeyUpdate(id: parts.joined(separator: " "), parts: parts, moves: moves, own: [], taken: [])
         // With the comments brought up to date if that leaves the config what was meant, else without. A
         // comment block the file holds inside a string, say, is not a comment there.
         for comments in [true, false] {
@@ -93,7 +97,7 @@ extension Config {
             }
         }
         // The lines could not be changed safely, as with a mode written as an inline table.
-        return .manual(KeyUpdate(id: "unplaced " + update.id, moves: plan.heldMoves, own: [], taken: []))
+        return .manual(KeyUpdate(id: "unplaced " + update.id, parts: ["unplaced " + update.id], moves: plan.heldMoves, own: [], taken: []))
     }
 
     /// The index of the newest default that first wrote a line the file still has; nil when the file holds no
@@ -469,12 +473,16 @@ private struct KeyPlan {
                     planned.append(KeyEdit(mode: mode, combo: combo, kind: .remove))
                 }
             }
-            // A key the current default adds beside a moved one, such as alt-h for focus left.
-            extras.append(contentsOf: added.filter { combo in
-                !target.values.contains(combo) && !extras.contains(combo) && (new[combo].map(moved.contains) ?? false)
-            })
+            // The keys the current default adds beside moved ones, such as alt-h and alt-l beside the arrows.
+            // They come as a set: with only focus left moved, alt-h without alt-l would be half a pair.
+            let beside = added.filter { combo in
+                !target.values.contains(combo) && target.keys.contains { old[$0] == new[combo] }
+            }
+            if beside.allSatisfy({ new[$0].map(moved.contains) ?? false }) {
+                extras.append(contentsOf: beside.filter { !extras.contains($0) })
+            }
         }
-        // Such keys come along with the move. They never arrive on their own, and none arrive when the user
+        // Such keys come along with the moves. They never arrive on their own, and none arrive when the user
         // uses one of them already.
         extras.removeAll(where: given.contains)
         if extras.allSatisfy({ mine[$0] == nil }) {
@@ -569,7 +577,9 @@ private struct KeyPlan {
                 guard was.map(\.comment) == now.map(\.comment) else { continue }
                 // Later runs first, so the earlier ones' places hold.
                 for (before, after) in zip(was, now).reversed() where before.comment {
-                    guard let at = onlyIndex(of: before.lines, in: lines) else { continue }
+                    // A file put together from two defaults may hold both their blocks. One becomes the new
+                    // block, and the other stays as it is, so the new one is not there twice.
+                    guard count(of: after.lines, in: lines) == 0, let at = onlyIndex(of: before.lines, in: lines) else { continue }
                     let end = ending(of: lines[at])
                     lines.replaceSubrange(at..<at + before.lines.count, with: after.lines.map { $0 + end })
                 }
@@ -592,10 +602,19 @@ private struct KeyPlan {
 
     /// Where `block` stands in `lines` as consecutive lines, when it does so exactly once.
     private func onlyIndex(of block: [String], in lines: [String]) -> Int? {
-        guard !block.isEmpty, lines.count >= block.count else { return nil }
-        let plain = lines.map(withoutTrailingSpace)
-        let found = (0...(plain.count - block.count)).filter { Array(plain[$0..<$0 + block.count]) == block }
+        let found = indices(of: block, in: lines)
         return found.count == 1 ? found[0] : nil
+    }
+
+    private func count(of block: [String], in lines: [String]) -> Int {
+        indices(of: block, in: lines).count
+    }
+
+    /// Every place `block` stands in `lines` as consecutive lines, trailing space aside.
+    private func indices(of block: [String], in lines: [String]) -> [Int] {
+        guard !block.isEmpty, lines.count >= block.count else { return [] }
+        let plain = lines.map(withoutTrailingSpace)
+        return (0...(plain.count - block.count)).filter { Array(plain[$0..<$0 + block.count]) == block }
     }
 }
 

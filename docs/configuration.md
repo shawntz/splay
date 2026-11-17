@@ -595,21 +595,24 @@ lists each such command with its new keys and the keys your file has, and asks.
 - Use the New Keys changes those keys in `splay.toml`. The file as it was
   stays beside it under a name such as `splay.toml.before-0.6`.
 - Keep My Keys leaves the file alone. Splay does not ask about those keys
-  again on that Mac. While it can move them, its menu has Use Splay's New Keys.
+  again on that Mac. As long as it can move them, its menu has a Use Splay's
+  New Keys item that brings the window back.
 - Closing the window without an answer asks again at the next start.
 
-Splay changes only what it wrote. It renames a moved key where your file binds
-it as an older default did, and brings up to date the comments it wrote that
-you have not changed. A key you removed stays removed, and a key you gave
-another command stays yours. A key the default added beside a moved one, as it
-added Alt-H and Alt-L, comes with it unless your file already uses one of
-them. Settings, rules and your own bindings stay as they are.
+Splay changes only the key lines an older default wrote, and adds the keys
+that come with a move. It renames a moved key where your file binds it as an
+older default did. A key you removed stays removed, and a key you gave another
+command stays yours. Alt-H and Alt-L came with the two arrows. They are added
+when both arrows move and your file uses neither. A comment Splay wrote above
+those keys is replaced only when you have not changed it and your file ends up
+with every key it describes. Otherwise the old comment stays, and you can
+delete it. Settings, rules and your own bindings stay as they are.
 
-Splay changes nothing, and says why once, when your file has its own line for
-a moved key, such as one with `exclude-apps`, or already uses one of the new
-keys. It does not ask about a file that has the current default's comments,
-since the older keys in it were put back by hand. `splay doctor` lists the
-older keys whenever the window would.
+Splay changes nothing, and says why once, when your file lists `exclude-apps`
+for a moved key, or already binds the key that would replace it, such as
+`alt-cmd-left`. It does not ask about a file that has a comment of the current
+default above these keys, since the older keys in it were put back by hand.
+`splay doctor` lists the older keys too, also after Keep My Keys.
 
 ## Default config
 
