@@ -13,7 +13,7 @@ https://shawntz.github.io/splay/changelog/.</p>
 Splay's releases. `CHANGELOG.md` in the source is upstream Dinky's, merged in
 as it stands, and lists Dinky's releases.
 
-## Unreleased
+## 0.4
 
 - The strip's default keys are on Option. A newly written config walks the strip with Alt-Left and Alt-Right and jumps to its ends with Alt-Home and Alt-End. Alt is the Option key. Cmd-Left and Cmd-Right stay with apps, where they reach the ends of a line in text fields and go back and forward in browsers. Cmd-Home and Cmd-End stay with apps too.
 - Splay never rewrites your `splay.toml`, so a file written by 0.3 or earlier keeps Cmd-Left, Cmd-Right, Cmd-Home and Cmd-End. To switch, rename `cmd-left`, `cmd-right`, `cmd-home` and `cmd-end` in it to `alt-left`, `alt-right`, `alt-home` and `alt-end`. Splay's menu shows each command with the key your file gives it.
