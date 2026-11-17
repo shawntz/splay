@@ -15,6 +15,13 @@ notarizes and publishes, and updates the Homebrew tap. Running it again without 
 unpublished `Release X.Y` commit, commit the fix, push, and run it again. A published version is never
 replaced.
 
+A pull request can carry the bump instead. In it, rename `## Unreleased` to `## X.Y` in `docs/changelog.md`
+and set `version:` in `docs/_config.yml`. Merge it any way GitHub offers, pull `main`, and run
+`scripts/release.sh`. It sees that the changelog's newest section and the site's version name the same `X.Y`,
+and that no local tag `vX.Y` exists yet. It skips its own bump, then tests, builds and publishes that version.
+To retry a failed run, run it again before adding commits to `main`. Release the bump before another
+changelog entry lands. The script refuses a `## Unreleased` section above a `## X.Y` that has no release.
+
 `scripts/package-release.sh X.Y` does the build half and publishes nothing. It writes `dist/Splay.app.zip`,
 `dist/appcast.xml` and `dist/splay.rb`:
 

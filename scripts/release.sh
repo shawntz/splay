@@ -4,7 +4,7 @@
 # Usage: NOTARYTOOL_PROFILE=<profile> scripts/release.sh [X.Y]   (run again to retry a failed release)
 # Without a version it bumps the latest tag by 0.1. Preparing turns the `## Unreleased` section of
 # docs/changelog.md into `## X.Y`, sets the site's version and commits and pushes "Release X.Y"; a rerun reuses
-# that commit.
+# that commit. A merged pull request that made the same two edits counts as prepared, and is released as it is.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 version="${1:-}"
@@ -41,7 +41,7 @@ update_tap() (
 # The release stays published when the tap update fails, so this warns and the script carries on.
 tap_failed() {
   echo "warning: $tag is published, but the Homebrew tap was not updated to it." >&2
-  echo "warning: to retry, run scripts/release.sh $version while HEAD is still the Release $version commit." >&2
+  echo "warning: to retry, run scripts/release.sh $version before adding commits to main." >&2
   echo "warning: after other commits, copy the splay.rb asset of $tag to Casks/splay.rb in the tap by hand." >&2
 }
 
@@ -58,6 +58,19 @@ git fetch -q origin main
 latest="$(gh release view -R "$repo" --json tagName --jq .tagName 2>/dev/null || true)"
 
 prepared="$(git log -1 --format=%s | sed -n 's/^Release \([0-9][0-9]*\.[0-9][0-9]*\)$/\1/p')"
+# A pull request can bump the version instead. Then HEAD is its merge commit, its squashed commit or its last
+# commit, and the tree shows the bump. The changelog's newest section and the site's version name the same X.Y,
+# and no local tag has that version, or the tag is at HEAD after a run that failed. HEAD must be what
+# origin/main has, so this path never pushes a local commit.
+if [[ -z "$prepared" ]]; then
+  newest="$(awk '/^## / { print substr($0, 4); exit }' "$changelog")"
+  if [[ "$newest" =~ ^[0-9]+\.[0-9]+$ ]] && grep -qx "version: \"$newest\"" docs/_config.yml \
+    && [[ "$(git rev-parse HEAD)" == "$(git rev-parse origin/main)" ]] \
+    && { ! git rev-parse --verify -q "v$newest" >/dev/null \
+      || [[ "$(git rev-list -n 1 "v$newest")" == "$(git rev-parse HEAD)" ]]; }; then
+    prepared="$newest"
+  fi
+fi
 if [[ -n "$prepared" ]]; then
   [[ -z "$version" || "$version" == "$prepared" ]] || { echo "HEAD prepares $prepared, not $version" >&2; exit 1; }
   version="$prepared"
@@ -86,6 +99,8 @@ fi
 if [[ -z "$prepared" ]]; then
   [[ "$(grep -cx '## Unreleased' "$changelog" || true)" == 1 ]] || { echo "$changelog needs one ## Unreleased section" >&2; exit 1; }
   [[ -n "$(changelog_section Unreleased)" ]] || { echo "The ## Unreleased section of $changelog is empty" >&2; exit 1; }
+  ! grep -qx "## $version" "$changelog" \
+    || { echo "$changelog already has a ## $version section; move its entries under ## Unreleased" >&2; exit 1; }
   git rev-parse --verify -q "$tag" >/dev/null && { echo "Tag $tag already exists" >&2; exit 1; }
   echo "==> Testing before preparing $version"
   swift test --jobs 4
