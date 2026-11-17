@@ -1,5 +1,5 @@
 title: Splay
-description: A scrolling tiling window manager for macOS. Each Space is one row of columns you walk with Option and the arrow keys. System Integrity Protection stays on.
+description: A scrolling tiling window manager for macOS. Each Space is one row of columns you walk with Option, Command and the arrow keys. System Integrity Protection stays on.
 # A project site. Every link and asset goes through relative_url or absolute_url,
 # so emptying baseurl serves the same site from the root of a domain.
 url: https://shawntz.github.io

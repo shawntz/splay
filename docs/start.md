@@ -18,8 +18,8 @@ $ splay column-width next <span class="cursor">█</span></code></pre>
 
 Splay tiles the windows on each native Space as one row of columns that runs
 past the edges of the display and scrolls sideways, after niri. A new window
-opens as a column right of the focused one, and Option with the left and right
-arrows walks along the row.
+opens as a column right of the focused one. Hold Option and Command, then
+press the left or right arrow to walk along the row.
 
 Splay is a fork of [Dinky](https://github.com/mikker/Dinky) by Mikkel
 Malmberg. It keeps Dinky's dwindle,
@@ -176,14 +176,16 @@ KiwiDesk or Dinky also running, each undoes the other's layouts; Splay shows a
 
 ## Keys
 
-The default bindings, all spelled out in the config. Alt is the Option key.
+The default bindings, all spelled out in the config. Alt is the Option key and
+Cmd is the Command key.
 
 <div class="wide-table" markdown="1">
 
 | Keys | |
 |---|---|
-| Alt-Left, Alt-Right | Focus the column to the left or right. |
-| Alt-Home, Alt-End | Focus the first or last column. |
+| Alt-Cmd-Left, Alt-Cmd-Right | Focus the column to the left or right. |
+| Alt-H, Alt-L | Also focus the column to the left or right. |
+| Alt-Cmd-Home, Alt-Cmd-End | Focus the first or last column. |
 | Alt-J, Alt-K | Focus the window below or above in a column. |
 | Alt-Shift-H, Alt-Shift-J, Alt-Shift-K, Alt-Shift-L | Move the window left, down, up, right. |
 | Alt-R, Alt-Shift-R | Give the column the next or previous preset width. |
@@ -203,46 +205,51 @@ The default bindings, all spelled out in the config. Alt is the Option key.
 </div>
 
 A bound key never reaches the app in front, whether or not its window is
-tiled. So Option-Left and Option-Right no longer move by a word in text
-fields. In standard macOS text fields Ctrl-Option-B and Ctrl-Option-F still
-do, but an editor or a terminal with keys of its own may have no other key for
-it. Option-Shift-Left and Option-Shift-Right still reach apps, so selecting by
-a word works as before. To give an app its keys back, list its bundle ID in the
-binding's `exclude-apps`, and Splay leaves the key to it while it is in front:
+tiled. Chrome, Firefox and VS Code switch tabs with Option-Command-Left and
+Option-Command-Right, and iTerm2 and Ghostty move between split panes with
+them. With Splay running, those keys walk the strip there instead. To give an
+app its keys back, list its bundle ID in the binding's `exclude-apps`, and
+Splay leaves the key to it while it is in front. Change the two lines your
+`[mode.main]` already has so they read:
 
 ```toml
-[mode.main]
-alt-left = { command = 'focus left', exclude-apps = ['com.apple.Terminal'] }
-alt-right = { command = 'focus right', exclude-apps = ['com.apple.Terminal'] }
+alt-cmd-left = { command = 'focus left', exclude-apps = ['com.google.Chrome', 'org.mozilla.firefox'] }
+alt-cmd-right = { command = 'focus right', exclude-apps = ['com.google.Chrome', 'org.mozilla.firefox'] }
 ```
 
+In those apps Alt-H and Alt-L still walk the strip.
 `splay list-windows --all --format '%{app-name} %{app-bundle-id}'` prints the
-bundle IDs. Alt-Home and Alt-End are Alt-Fn-Left and Alt-Fn-Right on a keyboard
-without Home and End.
+bundle IDs. On a keyboard without Home and End, press Fn-Option-Command-Left
+for Alt-Cmd-Home and Fn-Option-Command-Right for Alt-Cmd-End.
 
-The default Alt bindings also take over Option-letter characters. With
-`alt = 'left'` in [`[modifiers]`](configuration.md#modifiers), bindings answer
-only to the left Option key. The right one still types those characters, and
-right Option-Left and Option-Right still move by a word.
+The default Alt bindings also take over the characters Option types with
+those keys. On a German layout that is @ on Option-L, and the brackets, the
+pipe and the braces on Option-5 to Option-9. On a Polish layout Option-L types
+ł. With `alt = 'left'` in [`[modifiers]`](configuration.md#modifiers), bindings
+answer only to the left Option key. The right one still types those
+characters, and with Command and an arrow it still reaches apps.
 
-Splay 0.3 and earlier walked the strip with Cmd-Left, Cmd-Right, Cmd-Home and
-Cmd-End. A `splay.toml` written by one of them keeps those keys, because Splay
-never rewrites your file. To switch, rename `cmd-left`, `cmd-right`, `cmd-home`
-and `cmd-end` in it to `alt-left`, `alt-right`, `alt-home` and `alt-end`. If
-the file already binds one of the new keys, remove that line first.
+Alt-H and Alt-L are the keys Dinky gives `focus left` and `focus right`. If
+you type a character with Option-H or Option-L, or another tool of yours binds
+them as a Hammerspoon script might, delete the `alt-h` and `alt-l` lines from
+your `splay.toml`. Alt-Cmd-Left and Alt-Cmd-Right still walk the strip.
 
-Dinky also puts `focus left` and `focus right` on Alt-H and Alt-L. Splay
-leaves those two unbound, because Alt-Left and Alt-Right do that job. Option-H
-and Option-L then still reach apps and tools such as Hammerspoon. To have them
-back, add two lines to the `[mode.main]` your `splay.toml` already has:
+Splay 0.4 walked the strip with Alt-Left, Alt-Right, Alt-Home and Alt-End, and
+0.3 and earlier with Cmd-Left, Cmd-Right, Cmd-Home and Cmd-End. A `splay.toml`
+written by one of them keeps those keys, because Splay never rewrites your
+file. To switch, rename them to `alt-cmd-left`, `alt-cmd-right`,
+`alt-cmd-home` and `alt-cmd-end`. Then add these two lines right below the
+`[mode.main]` line, unless the file already has an `alt-h` or `alt-l` line or
+you want Option-H and Option-L left alone:
 
 ```toml
 alt-h = 'focus left'
 alt-l = 'focus right'
 ```
 
-Don't start a second `[mode.main]` for them. A table named twice is a parse
-error, which the menu and `splay doctor` report.
+Don't start a second `[mode.main]` for them, and don't write a key twice.
+Either is a parse error, which the menu and `splay doctor` report. The comment
+lines above the old keys still describe them, and you can delete those.
 
 ### Magnet and Rectangle
 
@@ -269,9 +276,9 @@ Splay keeps its own under the name `splay` and the bundle ID
 
 To bring your Dinky settings along, start from the `splay.toml` Splay writes
 and copy your changes into it. Don't copy Dinky's file over it. Bindings come
-only from the file, and Dinky's has none of the strip's, so Option-Left and
-Option-Right would go to apps as before, and `splay doctor` would not complain,
-because the file is valid. Dinky's file also says `default-layout = 'tiles'` and
+only from the file. Dinky's file has Alt-H and Alt-L but none of Splay's other
+strip keys, so Alt-Cmd-Left, Alt-Cmd-Right, Alt-R, Alt-C and Alt-M would go to
+apps. `splay doctor` would not complain, because the file is valid. Dinky's file also says `default-layout = 'tiles'` and
 `start-at-login = true`, and its first line points editors at Dinky's schema,
 which does not know the strip's keys. Rename hook variables as
 [Scripting](commands.md#sketchybar) says. The macOS settings above are shared:

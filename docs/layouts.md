@@ -42,11 +42,12 @@ view, so it never shows on the other display.
 
 ### Moving along it
 
-`focus left` and `right`, on Alt-Left and Alt-Right, go from column to column,
-landing on the window last focused in the column; `up` and `down`, on Alt-K
-and Alt-J, go within one. Focusing a column scrolls just far enough to show it
-whole. `focus-column first` and `last`, on Alt-Home and Alt-End, jump to the
-ends.
+`focus left` and `right` go from column to column, landing on the window last
+focused in the column. They are on Alt-Cmd-Left and Alt-Cmd-Right, and on Alt-H
+and Alt-L. Alt is the Option key and Cmd is the Command key. `up` and `down`,
+on Alt-K and Alt-J, go within one. Focusing a column scrolls just far enough to
+show it whole. `focus-column first` and `last`, on Alt-Cmd-Home and
+Alt-Cmd-End, jump to the ends.
 
 `move left` and `right` swap the column with its neighbour, or take a window
 that shares its column out into a new one. `join-with left` and `right` put the

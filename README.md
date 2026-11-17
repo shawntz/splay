@@ -25,7 +25,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-reduced-motion: reduce)" srcset="docs/assets/demo/strip-poster.png">
-    <img src="docs/assets/demo/strip.gif" width="960" alt="A strip of window columns on a mock desktop. New windows open to the right of the focused one, Option with the left and right arrows moves focus a column at a time, and the strip scrolls to follow.">
+    <img src="docs/assets/demo/strip.gif" width="960" alt="A strip of window columns on a mock desktop. New windows open to the right of the focused one, Option and Command with the left and right arrows move focus a column at a time, and the strip scrolls to follow.">
   </picture>
   <br>
   <sub>The animations on this page are rendered from Splay's layout engine.</sub>
@@ -38,13 +38,14 @@ the niri and PaperWM idea on a Mac, with System Integrity Protection left on.
 ## Why Splay
 
 - **Every workspace scrolls.** The strip is the layout from the first launch, with nothing to configure.
-- **Option and the arrow keys walk it.** <kbd>Alt</kbd>+<kbd>←</kbd> and <kbd>→</kbd> step one column.
-  <kbd>Alt</kbd>+<kbd>Home</kbd> and <kbd>End</kbd> jump to either end.
+- **Option, Command and the arrows walk it.** <kbd>Alt</kbd>+<kbd>Cmd</kbd>+<kbd>←</kbd> and <kbd>→</kbd> step one
+  column, and so do <kbd>Alt</kbd>+<kbd>H</kbd> and <kbd>L</kbd>. <kbd>Alt</kbd>+<kbd>Cmd</kbd>+<kbd>Home</kbd>
+  and <kbd>End</kbd> jump to either end.
 - **Widths on one key.** <kbd>Alt</kbd>+<kbd>R</kbd> cycles a third, a half and two
   thirds. <kbd>Alt</kbd>+<kbd>M</kbd> maximizes and restores. <kbd>Alt</kbd>+<kbd>C</kbd> centres.
 - **Focus remembers.** Go back to a column and you land on the window you left there.
 - **The view holds still.** When another column closes or resizes, the one you're looking at stays in view.
-- **Fast presses keep up.** Each press of <kbd>Alt</kbd>+<kbd>→</kbd> steps one column, without
+- **Fast presses keep up.** Each press of <kbd>Alt</kbd>+<kbd>Cmd</kbd>+<kbd>→</kbd> steps one column, without
   waiting for macOS to catch up.
 - **Rules size windows.** `run = 'column-width 0.66'` opens an app at two thirds of the screen.
 - **Updates in one click.** Releases are signed, notarized and universal, and Splay offers each new
@@ -53,7 +54,7 @@ the niri and PaperWM idea on a Mac, with System Integrity Protection left on.
 <p align="center">
   <picture>
     <source media="(prefers-reduced-motion: reduce)" srcset="docs/assets/demo/widths-poster.png">
-    <img src="docs/assets/demo/widths.gif" width="960" alt="Alt-R steps the focused column through a third, a half and two thirds of the screen. Alt-M widens it to fill the screen and back. Alt-C centres it.">
+    <img src="docs/assets/demo/widths.gif" width="960" alt="Alt-R steps the focused column through a third, a half and two thirds of the screen. Alt-M widens it to fill the screen and back. Alt-C centres it. Alt-L and Alt-H step to the next column and back.">
   </picture>
 </p>
 
@@ -70,7 +71,7 @@ Updates is in its menu. When Splay finds one on its own, `↑` appears after the
 the menu bar.
 
 Splay asks for Accessibility on first launch. Once you allow it, it tiles every open window into
-the strip, and Option-Left and Option-Right stop reaching apps. Quit from the menu bar and every open
+the strip, and the keys it binds stop reaching apps. Quit from the menu bar and every open
 window goes back where it was.
 [Get started](https://shawntz.github.io/splay/start/) covers the first run, the two macOS settings
 Splay asks about, and how to remove it.
@@ -91,12 +92,12 @@ open build/Splay.app
 
 ## Keys
 
-Alt is the Option key. Every binding is in `~/.config/splay/splay.toml`.
+Alt is the Option key and Cmd is the Command key. Every binding is in `~/.config/splay/splay.toml`.
 
 | Keys | Does |
 | --- | --- |
-| <kbd>Alt</kbd>+<kbd>←</kbd> <kbd>→</kbd> | Focus the column to the left or right |
-| <kbd>Alt</kbd>+<kbd>Home</kbd> <kbd>End</kbd> | Focus the first or last column |
+| <kbd>Alt</kbd>+<kbd>Cmd</kbd>+<kbd>←</kbd> <kbd>→</kbd>, or <kbd>Alt</kbd>+<kbd>H</kbd> <kbd>L</kbd> | Focus the column to the left or right |
+| <kbd>Alt</kbd>+<kbd>Cmd</kbd>+<kbd>Home</kbd> <kbd>End</kbd> | Focus the first or last column |
 | <kbd>Alt</kbd>+<kbd>J</kbd> <kbd>K</kbd> | Focus down or up within a column |
 | <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>H</kbd> <kbd>J</kbd> <kbd>K</kbd> <kbd>L</kbd> | Move the window left, down, up or right |
 | <kbd>Alt</kbd>+<kbd>R</kbd>, <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd> | Next or previous preset width |
@@ -108,11 +109,12 @@ Alt is the Option key. Every binding is in `~/.config/splay/splay.toml`.
 | <kbd>Alt</kbd>+<kbd>1</kbd> to <kbd>9</kbd> | Go to a workspace |
 | <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>1</kbd> to <kbd>9</kbd> | Send the window to a workspace |
 
-While Splay runs, <kbd>Alt</kbd>+<kbd>←</kbd> and <kbd>→</kbd> belong to it, so they no longer move
-the cursor by a word in text fields. In standard macOS text fields <kbd>Ctrl</kbd>+<kbd>Option</kbd>+<kbd>B</kbd>
-and <kbd>F</kbd> still do. To hand the keys back to an app, list it under `exclude-apps`. To keep the
-right Option key for apps, set `alt = 'left'` under `[modifiers]`.
-[Keys](https://shawntz.github.io/splay/start/#keys) in the manual shows both.
+While Splay runs, these keys belong to it. In Chrome and Firefox,
+<kbd>Option</kbd>+<kbd>Command</kbd>+<kbd>←</kbd> and <kbd>→</kbd> walk the strip instead of switching tabs.
+<kbd>Option</kbd>+<kbd>L</kbd> no longer types @ on a German layout, or ł on a Polish one. To hand a key
+back to an app, list the app under `exclude-apps`. To keep the right Option key for typing, set
+`alt = 'left'` under `[modifiers]`. To free Option-H and Option-L, delete the `alt-h` and `alt-l` lines.
+[Keys](https://shawntz.github.io/splay/start/#keys) in the manual shows each.
 
 ## Configure
 
@@ -176,8 +178,8 @@ option. Splay is built around the strip.
 | | Dinky | Splay |
 | --- | --- | --- |
 | Default layout | Dwindle tiles | Scrolling strip |
-| Move between columns | <kbd>Alt</kbd>+<kbd>H</kbd> <kbd>L</kbd> | <kbd>Alt</kbd>+<kbd>←</kbd> <kbd>→</kbd> |
-| Jump to the first or last column | No | <kbd>Alt</kbd>+<kbd>Home</kbd> <kbd>End</kbd> |
+| Move between columns | <kbd>Alt</kbd>+<kbd>H</kbd> <kbd>L</kbd> | <kbd>Alt</kbd>+<kbd>Cmd</kbd>+<kbd>←</kbd> <kbd>→</kbd>, and <kbd>Alt</kbd>+<kbd>H</kbd> <kbd>L</kbd> |
+| Jump to the first or last column | No | <kbd>Alt</kbd>+<kbd>Cmd</kbd>+<kbd>Home</kbd> <kbd>End</kbd> |
 | Preset column widths | No | <kbd>Alt</kbd>+<kbd>R</kbd> cycles a list you set |
 | Set a column's width | <kbd>Alt</kbd>+<kbd>-</kbd> <kbd>=</kbd>, 50 points a step | Any share, `column-width 0.75` |
 | Maximize a column | Fullscreen, until focus moves | Holds until you toggle it back |

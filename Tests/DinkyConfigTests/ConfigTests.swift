@@ -32,7 +32,7 @@ struct ConfigTests {
         #expect(try main[KeyCombo("alt-k")]?.commands == ["focus up"])
         #expect(try main[KeyCombo("alt-shift-l")]?.commands == ["move right"])
         #expect(try main[KeyCombo("alt-shift-semicolon")]?.commands == ["mode service"])
-        #expect(main.count == 43)
+        #expect(main.count == 45)
         #expect(try config.modes["service"]!.bindings[KeyCombo("esc")]?.commands == ["reload-config", "mode main"])
         #expect(try config.modes["service"]!.bindings[KeyCombo("alt-shift-j")]?.commands == ["join-with down", "mode main"])
     }

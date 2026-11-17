@@ -484,7 +484,7 @@ kbd {
 
 .keylist div {
   display: grid;
-  grid-template-columns: 12.5em minmax(0, 1fr);
+  grid-template-columns: 14em minmax(0, 1fr);
   gap: 4px 14px;
   padding: 10px 0;
   border-top: 1px solid var(--line);
@@ -1225,7 +1225,7 @@ figure text {
 
   .keytable tr {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) fit-content(68%);
     gap: 6px 12px;
     padding: 12px 0 12px 12px;
     border-bottom: 1px solid var(--line);
