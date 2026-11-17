@@ -13,7 +13,7 @@ https://shawntz.github.io/splay/changelog/.</p>
 Splay's releases. `CHANGELOG.md` in the source is upstream Dinky's, merged in
 as it stands, and lists Dinky's releases.
 
-## Unreleased
+## 0.5
 
 - A newly written `splay.toml` walks the strip with Alt-Cmd-Left and Alt-Cmd-Right, and with Alt-H and Alt-L as in Dinky. Alt-Cmd-Home and Alt-Cmd-End jump to its ends. On a laptop, Home and End are Fn with the left and right arrows. Alt is the Option key and Cmd is the Command key. Option-Left and Option-Right alone stay with apps, where they move by a word in text fields.
 - Splay never rewrites your `splay.toml`, so nothing changes for you until you edit it. A file written by 0.4 has `alt-left`, `alt-right`, `alt-home` and `alt-end`, and one written by 0.3 or earlier has `cmd-left`, `cmd-right`, `cmd-home` and `cmd-end`. To switch, rename those four to `alt-cmd-left`, `alt-cmd-right`, `alt-cmd-home` and `alt-cmd-end`. Then, if you want them, add `alt-h = 'focus left'` and `alt-l = 'focus right'` right below the `[mode.main]` line, unless the file already has them. A key written twice stops the file from loading.
