@@ -38,6 +38,19 @@ commit. Packaging builds in `dist/build`, so a copy of Splay running from `build
 packaged release carries the update feed. `scripts/bundle.sh` leaves it out, so a local build never offers
 to replace itself with a release.
 
+## When the default config changes
+
+A config that exists keeps the keys it was written with. Splay compares it with the default it came from and
+offers to move the keys a later release moved, so it needs every default ever shipped.
+`Sources/DinkyConfig/ShippedDefaults.swift` holds them. In the change that edits `Config.defaultTOML`:
+
+- Copy the text the last release shipped into a constant in `ShippedDefaults.swift`, and point that release's
+  entry at it.
+- Add an entry for the coming release that reads `defaultTOML`.
+- Add the new text's SHA-256 to `ShippedDefaultsTests`. The pins of earlier releases never change.
+
+`swift test` fails until all three are done.
+
 ## One-time setup
 
 A notarization profile, stored in the keychain:

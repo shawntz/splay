@@ -236,8 +236,15 @@ your `splay.toml`. Alt-Cmd-Left and Alt-Cmd-Right still walk the strip.
 
 Splay 0.4 walked the strip with Alt-Left, Alt-Right, Alt-Home and Alt-End, and
 0.3 and earlier with Cmd-Left, Cmd-Right, Cmd-Home and Cmd-End. A `splay.toml`
-written by one of them keeps those keys, because Splay never rewrites your
-file. To switch, rename them to `alt-cmd-left`, `alt-cmd-right`,
+written by one of them keeps those keys until you move them. When Splay
+starts and finds them, it lists the keys that moved and asks. Use the New Keys
+renames them in your file and keeps the file as it was beside it. It also adds
+the `alt-h` and `alt-l` lines, unless your file already uses either key. To
+leave Option-H and Option-L to apps, delete those two lines afterwards.
+[When a release moves keys](configuration.md#when-a-release-moves-keys) has
+the rest.
+
+To move them by hand, rename them to `alt-cmd-left`, `alt-cmd-right`,
 `alt-cmd-home` and `alt-cmd-end`. Then add these two lines right below the
 `[mode.main]` line, unless the file already has an `alt-h` or `alt-l` line or
 you want Option-H and Option-L left alone:

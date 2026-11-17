@@ -25,6 +25,11 @@ func runDoctor(_ args: [String]) -> Int32 {
         do {
             config = try Config.load(from: url)
             ok("parses: \(config.workspaces) workspaces, \(config.modes.count) modes, \(config.rules.count) window rules")
+            if let text = try? String(contentsOf: url, encoding: .utf8),
+               let note = KeyUpdateText.doctorNote(Config.keyUpdate(for: text), file: url.lastPathComponent,
+                                                   inMenu: url.resolvingSymlinksInPath() == Config.userConfigURL.resolvingSymlinksInPath()) {
+                warn(note)
+            }
         } catch {
             fail("\(error)")
         }

@@ -70,6 +70,7 @@ final class DinkyApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
         Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in self?.checkOtherTilers() }
         checkOtherTilers()
         refresh()
+        KeyUpdatePrompt.shared.askAtLaunch()
         print("app: status item up, listening on \(socketPath)")
         print("STATUS:READY")  // fut's run extension watches for this line
         fflush(stdout)
@@ -204,6 +205,7 @@ final class DinkyApp: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu.addItem(item("Re-tile", "retile"))
         menu.addItem(item("Clear Saved Minimum Sizes", "clear-minimum-sizes"))
         menu.addItem(item("Reload Config", "reload-config"))
+        if let keys = KeyUpdatePrompt.shared.menuItem() { menu.addItem(keys) }
         let enabled = item("Enabled", "enable toggle")
         enabled.state = state.enabled ? .on : .off
         menu.addItem(enabled)

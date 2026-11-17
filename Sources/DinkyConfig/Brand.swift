@@ -17,6 +17,8 @@ public enum Brand {
     public static let socketName = "\(name).sock"
     /// Hook environment variables start with this, as in SPLAY_WORKSPACE.
     public static let envPrefix = "\(name.uppercased())_"
+    /// The page that lists what each release changed.
+    public static let changelogURL = "https://shawntz.github.io/splay/changelog/"
 
     /// Upstream Dinky can be installed beside this app with its own paths. Running both makes two tilers
     /// fight over the same windows, so its process counts as another tiler.
