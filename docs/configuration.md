@@ -431,8 +431,7 @@ outlines.
 Which key of each modifier pair a binding's modifier means. Limit `alt` to one
 side and the other Option key types special characters as usual: with
 `alt = 'left'`, left Option-j focuses down and right Option-j types `∆`.
-The right Option key then also keeps Option-Left and Option-Right for apps,
-where they move by a word in text fields.
+The right Option key with Command and an arrow also reaches apps.
 
 <div class="wide-table" markdown="1">
 
@@ -559,7 +558,7 @@ a command or a list of commands. Bound keys are swallowed. A key can also map
 to a table with `command` and `exclude-apps`, a list of bundle IDs: while one
 of those apps is frontmost, Splay leaves the key to it. Terminals that use
 `ctrl-hjkl` for their own panes keep it that way, and an app can get
-[Option-Left and Option-Right](start.md#keys) back the same way.
+[Option-Command-Left and Option-Command-Right](start.md#keys) back the same way.
 
 ```toml
 [mode.main]
@@ -580,9 +579,9 @@ modifiers and `meh` all but `cmd`, so `hyper-1` is `alt-ctrl-cmd-shift-1`.
 - `keypad-0`–`keypad-9`, `keypad-clear` `keypad-decimal` `keypad-divide`
   `keypad-enter` `keypad-equal` `keypad-minus` `keypad-multiply` `keypad-plus`
 
-The default `alt-` bindings take over Option-letter characters, Option-Left
-and Option-Right. Set `[modifiers] alt = 'left'` to leave them all to the
-right Option key.
+The default `alt-` bindings take over the characters Option types with those
+keys. On a German layout Option-L types @. Set `[modifiers] alt = 'left'` to
+type them with the right Option key.
 
 ## Default config
 
@@ -725,8 +724,10 @@ alt-shift-7 = 'move-window-to-workspace 7'
 alt-shift-8 = 'move-window-to-workspace 8'
 alt-shift-9 = 'move-window-to-workspace 9'
 alt-tab = 'workspace-back-and-forth'
+alt-h = 'focus left'
 alt-j = 'focus down'
 alt-k = 'focus up'
+alt-l = 'focus right'
 alt-shift-h = 'move left'
 alt-shift-j = 'move down'
 alt-shift-k = 'move up'
@@ -739,17 +740,17 @@ alt-comma = 'layout accordion'
 alt-slash = 'layout tiles'
 alt-shift-n = 'move-window-to-display next'
 alt-shift-semicolon = 'mode service'
-# Alt-Left and Alt-Right walk the strip, so apps no longer get them. Text fields use them to move by a word.
-# Standard macOS text fields also do that on Ctrl-Option-B and Ctrl-Option-F. To leave the keys to some
-# apps, list their bundle IDs:
-# alt-left = { command = 'focus left', exclude-apps = ['bundle.id'] }
-# To leave the right Option key to every app, set alt = 'left' under [modifiers].
-# alt-h and alt-l are left unbound, so Option-H and Option-L still reach apps and other tools.
-alt-left = 'focus left'
-alt-right = 'focus right'
+# Alt-Cmd-Left and Alt-Cmd-Right walk the strip, as Alt-H and Alt-L do, so apps no longer get these keys.
+# Chrome and Firefox switch tabs with Option-Command-Left and Option-Command-Right, and Option-L types @
+# on a German layout and ł on a Polish one. To leave a key to some apps, replace its line with one like this:
+# alt-cmd-left = { command = 'focus left', exclude-apps = ['bundle.id'] }
+# To leave the right Option key to every app, set alt = 'left' under [modifiers]. To free Option-H and
+# Option-L for typing or for another tool, delete the alt-h and alt-l lines above.
+alt-cmd-left = 'focus left'
+alt-cmd-right = 'focus right'
 # The strip: its first and last column, the focused column's preset widths, centring and maximising it.
-alt-home = 'focus-column first'
-alt-end = 'focus-column last'
+alt-cmd-home = 'focus-column first'
+alt-cmd-end = 'focus-column last'
 alt-r = 'column-width next'
 alt-shift-r = 'column-width prev'
 alt-c = 'center-column'

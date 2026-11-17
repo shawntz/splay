@@ -137,8 +137,10 @@ extension Config {
     alt-shift-8 = 'move-window-to-workspace 8'
     alt-shift-9 = 'move-window-to-workspace 9'
     alt-tab = 'workspace-back-and-forth'
+    alt-h = 'focus left'
     alt-j = 'focus down'
     alt-k = 'focus up'
+    alt-l = 'focus right'
     alt-shift-h = 'move left'
     alt-shift-j = 'move down'
     alt-shift-k = 'move up'
@@ -151,17 +153,17 @@ extension Config {
     alt-slash = 'layout tiles'
     alt-shift-n = 'move-window-to-display next'
     alt-shift-semicolon = 'mode service'
-    # Alt-Left and Alt-Right walk the strip, so apps no longer get them. Text fields use them to move by a word.
-    # Standard macOS text fields also do that on Ctrl-Option-B and Ctrl-Option-F. To leave the keys to some
-    # apps, list their bundle IDs:
-    # alt-left = { command = 'focus left', exclude-apps = ['bundle.id'] }
-    # To leave the right Option key to every app, set alt = 'left' under [modifiers].
-    # alt-h and alt-l are left unbound, so Option-H and Option-L still reach apps and other tools.
-    alt-left = 'focus left'
-    alt-right = 'focus right'
+    # Alt-Cmd-Left and Alt-Cmd-Right walk the strip, as Alt-H and Alt-L do, so apps no longer get these keys.
+    # Chrome and Firefox switch tabs with Option-Command-Left and Option-Command-Right, and Option-L types @
+    # on a German layout and ł on a Polish one. To leave a key to some apps, replace its line with one like this:
+    # alt-cmd-left = { command = 'focus left', exclude-apps = ['bundle.id'] }
+    # To leave the right Option key to every app, set alt = 'left' under [modifiers]. To free Option-H and
+    # Option-L for typing or for another tool, delete the alt-h and alt-l lines above.
+    alt-cmd-left = 'focus left'
+    alt-cmd-right = 'focus right'
     # The strip: its first and last column, the focused column's preset widths, centring and maximising it.
-    alt-home = 'focus-column first'
-    alt-end = 'focus-column last'
+    alt-cmd-home = 'focus-column first'
+    alt-cmd-end = 'focus-column last'
     alt-r = 'column-width next'
     alt-shift-r = 'column-width prev'
     alt-c = 'center-column'

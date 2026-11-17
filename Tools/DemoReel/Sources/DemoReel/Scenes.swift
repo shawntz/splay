@@ -60,11 +60,11 @@ enum Scenes {
         let timeline = stage.record([
             .open(4, hold: 1.2),
             .open(5, hold: 1.2),
-            .key("alt-left"),
-            .key("alt-left"),
-            .key("alt-home", hold: 1.2),
-            .key("alt-right"),
-            .key("alt-end", hold: 1.2),
+            .key("alt-cmd-left"),
+            .key("alt-cmd-left"),
+            .key("alt-cmd-home", hold: 1.2),
+            .key("alt-cmd-right"),
+            .key("alt-cmd-end", hold: 1.2),
             .close(5),
             .close(4, hold: 1.2),
         ], lead: 0.7)
@@ -90,8 +90,8 @@ enum Scenes {
             .key("alt-m"),
             .key("alt-c", hold: 1.2),
             .key("alt-shift-r"),
-            .key("alt-right"),
-            .key("alt-left", hold: 1.2),
+            .key("alt-l"),
+            .key("alt-h", hold: 1.2),
         ], lead: 0.7)
         return Scene(name: "widths", timeline: timeline, placement: single)
     }
