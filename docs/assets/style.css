@@ -971,6 +971,25 @@ kbd {
   min-width: 13em;
 }
 
+/* Two columns fit any width. A narrow screen stacks them. */
+.wide-table table:not(:has(th:nth-child(3))) {
+  min-width: 0;
+}
+
+/* Browsers share the width out differently. This gives the first of two columns the same share in each. */
+.wide-table table:not(:has(th:nth-child(3))) td:first-child {
+  width: 38%;
+}
+
+/*
+  A browser may wrap code after a hyphen. In a table of commands the layout
+  puts each word of the code in one of these spans, so a command wraps only
+  after a space or a pipe.
+*/
+.prose td code .keep {
+  white-space: nowrap;
+}
+
 .cursor {
   color: var(--azure);
 }
@@ -1257,6 +1276,43 @@ figure text {
   .keytable td:nth-child(3) {
     grid-column: 2;
     grid-row: 1;
+  }
+
+  /*
+    A table of two columns shows each row as the first cell above the second.
+    The second cell is muted, as in the key table on the landing page. A rule
+    above the first row stands in for the hidden header.
+  */
+  .prose table:not(:has(th:nth-child(3))),
+  .prose table:not(:has(th:nth-child(3))) :is(tbody, tr, td) {
+    display: block;
+  }
+
+  .prose table:not(:has(th:nth-child(3))) {
+    border-top: 1px solid var(--line-strong);
+  }
+
+  .prose table:not(:has(th:nth-child(3))) thead {
+    display: none;
+  }
+
+  .prose table:not(:has(th:nth-child(3))) tr {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .prose table:not(:has(th:nth-child(3))) td {
+    padding: 0;
+    border: 0;
+  }
+
+  .prose table:not(:has(th:nth-child(3))) td:first-child {
+    width: auto;
+  }
+
+  .prose table:not(:has(th:nth-child(3))) td + td {
+    margin-top: 4px;
+    color: var(--muted);
   }
 
   .prose h2 {

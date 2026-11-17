@@ -1,3 +1,37 @@
+{%- comment -%}
+  A table row in Markdown escapes a pipe in code as \|, as GitHub needs.
+  GitHub then shows a plain pipe, but kramdown keeps the backslash in code.
+  So in each table that has one, and only there, turn \| back into a pipe.
+  Each word of the code in such a table also goes into a span that the
+  stylesheet keeps on one line, so a long command wraps only after a space or
+  a pipe. Code that holds a tag, such as highlighted code, keeps its words bare.
+{%- endcomment -%}
+{%- assign parts = content | split: '<table' -%}
+{%- capture body -%}
+  {%- for part in parts -%}
+    {%- assign inside = part | split: '</table>' | first -%}
+    {%- if forloop.first -%}
+      {{- part -}}
+    {%- elsif part != inside and inside contains '\|' -%}
+      {%- assign codes = inside | split: '<code' -%}
+      <table{{ codes | first | replace: '\|', '|' }}
+      {%- for code in codes offset: 1 -%}
+        {%- assign text = code | split: '</code>' | first -%}
+        {%- assign tag = text | split: '>' | first | append: '>' -%}
+        {%- assign inner = text | remove_first: tag -%}
+        {%- assign rest = code | remove_first: text | replace: '\|', '|' -%}
+        {%- if inner contains '<' -%}
+          <code{{ tag }}{{ inner | replace: '\|', '|' }}{{ rest }}
+        {%- else -%}
+          <code{{ tag }}<span class="keep">{{ inner | replace: ' ', '</span> <span class="keep">' | replace: '\|', '|</span><wbr><span class="keep">' }}</span>{{ rest }}
+        {%- endif -%}
+      {%- endfor -%}
+      {{- part | remove_first: inside -}}
+    {%- else -%}
+      <table{{ part }}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}
 <!doctype html>
 <html lang="en">
   <head>
@@ -31,7 +65,7 @@
       </nav>
 
       <main id="content" class="prose">
-        {{ content }}
+        {{ body }}
 
         {%- assign pages = site.data.manual %}
         {%- for item in pages %}
