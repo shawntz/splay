@@ -431,6 +431,8 @@ outlines.
 Which key of each modifier pair a binding's modifier means. Limit `alt` to one
 side and the other Option key types special characters as usual: with
 `alt = 'left'`, left Option-j focuses down and right Option-j types `∆`.
+The right Option key then also keeps Option-Left and Option-Right for apps,
+where they move by a word in text fields.
 
 <div class="wide-table" markdown="1">
 
@@ -557,7 +559,7 @@ a command or a list of commands. Bound keys are swallowed. A key can also map
 to a table with `command` and `exclude-apps`, a list of bundle IDs: while one
 of those apps is frontmost, Splay leaves the key to it. Terminals that use
 `ctrl-hjkl` for their own panes keep it that way, and an app can get
-[Cmd-Left and Cmd-Right](start.md#keys) back the same way.
+[Option-Left and Option-Right](start.md#keys) back the same way.
 
 ```toml
 [mode.main]
@@ -578,8 +580,9 @@ modifiers and `meh` all but `cmd`, so `hyper-1` is `alt-ctrl-cmd-shift-1`.
 - `keypad-0`–`keypad-9`, `keypad-clear` `keypad-decimal` `keypad-divide`
   `keypad-enter` `keypad-equal` `keypad-minus` `keypad-multiply` `keypad-plus`
 
-The default `alt-` bindings take over Option-letter characters; set
-`[modifiers] alt = 'left'` to keep right Option for typing them.
+The default `alt-` bindings take over Option-letter characters, Option-Left
+and Option-Right. Set `[modifiers] alt = 'left'` to leave them all to the
+right Option key.
 
 ## Default config
 
@@ -736,15 +739,17 @@ alt-comma = 'layout accordion'
 alt-slash = 'layout tiles'
 alt-shift-n = 'move-window-to-display next'
 alt-shift-semicolon = 'mode service'
-# Cmd-Left and Cmd-Right walk the strip, so apps no longer get them: line start and end in text fields,
-# where Ctrl-A and Ctrl-E still work. To leave them to some apps, list their bundle IDs:
-# cmd-left = { command = 'focus left', exclude-apps = ['bundle.id'] }
+# Alt-Left and Alt-Right walk the strip, so apps no longer get them. Text fields use them to move by a word.
+# Standard macOS text fields also do that on Ctrl-Option-B and Ctrl-Option-F. To leave the keys to some
+# apps, list their bundle IDs:
+# alt-left = { command = 'focus left', exclude-apps = ['bundle.id'] }
+# To leave the right Option key to every app, set alt = 'left' under [modifiers].
 # alt-h and alt-l are left unbound, so Option-H and Option-L still reach apps and other tools.
-cmd-left = 'focus left'
-cmd-right = 'focus right'
+alt-left = 'focus left'
+alt-right = 'focus right'
 # The strip: its first and last column, the focused column's preset widths, centring and maximising it.
-cmd-home = 'focus-column first'
-cmd-end = 'focus-column last'
+alt-home = 'focus-column first'
+alt-end = 'focus-column last'
 alt-r = 'column-width next'
 alt-shift-r = 'column-width prev'
 alt-c = 'center-column'

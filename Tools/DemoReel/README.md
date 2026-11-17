@@ -17,7 +17,7 @@ swift run demoreel
 
 | Clip | Shows |
 | --- | --- |
-| `strip` | New windows open as columns beside the focused one. Cmd-Left, Cmd-Right, Cmd-Home and Cmd-End walk the strip. |
+| `strip` | New windows open as columns beside the focused one. Alt-Left, Alt-Right, Alt-Home and Alt-End walk the strip. |
 | `widths` | Alt-R and Alt-Shift-R step through the preset widths, Alt-M maximizes and restores, Alt-C centres. |
 | `versus` | The same five windows under Dinky's default layout (tiles) and Splay's (the strip). |
 | `workspaces` | Ctrl-Left and Ctrl-Right switch workspace, Alt-Shift-2 and Alt-Shift-1 send a window across. |
