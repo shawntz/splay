@@ -13,7 +13,7 @@ https://shawntz.github.io/splay/changelog/.</p>
 Splay's releases. `CHANGELOG.md` in the source is upstream Dinky's, merged in
 as it stands, and lists Dinky's releases.
 
-## Unreleased
+## 0.6
 
 - When a release has moved default keys since your `splay.toml` was written, Splay now asks when it starts. A window lists each command with its new keys and the keys your file still has. Use the New Keys changes those keys in your file and keeps the file as it was beside it, as `splay.toml.before-0.6`. Keep My Keys leaves the file alone, and Splay does not ask about those keys again on that Mac. While Splay can move them, its menu has Use Splay's New Keys.
 - For a file from 0.4 or earlier, the new keys are Alt-Cmd-Left and Alt-Cmd-Right to walk the strip, and Alt-Cmd-Home and Alt-Cmd-End for its ends. Alt-H and Alt-L are added beside them, unless your file already uses either. Until now an update left the old keys in place, because Splay never changed a config that existed.
