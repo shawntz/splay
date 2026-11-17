@@ -151,15 +151,17 @@ extension Config {
     alt-slash = 'layout tiles'
     alt-shift-n = 'move-window-to-display next'
     alt-shift-semicolon = 'mode service'
-    # Cmd-Left and Cmd-Right walk the strip, so apps no longer get them: line start and end in text fields,
-    # where Ctrl-A and Ctrl-E still work. To leave them to some apps, list their bundle IDs:
-    # cmd-left = { command = 'focus left', exclude-apps = ['bundle.id'] }
+    # Alt-Left and Alt-Right walk the strip, so apps no longer get them. Text fields use them to move by a word.
+    # Standard macOS text fields also do that on Ctrl-Option-B and Ctrl-Option-F. To leave the keys to some
+    # apps, list their bundle IDs:
+    # alt-left = { command = 'focus left', exclude-apps = ['bundle.id'] }
+    # To leave the right Option key to every app, set alt = 'left' under [modifiers].
     # alt-h and alt-l are left unbound, so Option-H and Option-L still reach apps and other tools.
-    cmd-left = 'focus left'
-    cmd-right = 'focus right'
+    alt-left = 'focus left'
+    alt-right = 'focus right'
     # The strip: its first and last column, the focused column's preset widths, centring and maximising it.
-    cmd-home = 'focus-column first'
-    cmd-end = 'focus-column last'
+    alt-home = 'focus-column first'
+    alt-end = 'focus-column last'
     alt-r = 'column-width next'
     alt-shift-r = 'column-width prev'
     alt-c = 'center-column'

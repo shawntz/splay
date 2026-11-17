@@ -1,7 +1,7 @@
 ---
 layout: landing
 title: A scrolling tiling window manager for macOS
-description: Splay lays each macOS Space out as one row of columns that Cmd-Left and Cmd-Right scroll through. Signed, notarized and updated in the app, with System Integrity Protection left on.
+description: Splay lays each macOS Space out as one row of columns that you scroll through with Option and the arrow keys. Signed, notarized and updated in the app, with System Integrity Protection left on.
 permalink: /
 ---
 
@@ -11,7 +11,7 @@ permalink: /
     <h1 id="hero-title">Splay</h1>
     <p class="lede">
       A scrolling tiling window manager for macOS. Each Space is one row of columns that runs past
-      the edges of the display, and <kbd>Cmd-Left</kbd> and <kbd>Cmd-Right</kbd> walk it.
+      the edges of the display. Hold Option and press the left or right arrow to move along it.
     </p>
     <p class="built-on">
       The niri and PaperWM idea on a Mac, with System Integrity Protection left on. A fork of
@@ -26,8 +26,8 @@ permalink: /
   </div>
   <div class="wrap wrap-wide">
     {% include demo.html name="strip" class="demo-hero"
-      label="One workspace with five windows. A new window opens as a column to the right of the focused one. Cmd-Right and Cmd-Left move focus one column and the strip scrolls to show it. Cmd-End and Cmd-Home jump to the last and first column."
-      caption="A new window opens beside the focused column at its own width. Cmd-Right and Cmd-Left step one column, Cmd-End and Cmd-Home jump to the ends." %}
+      label="One workspace with five windows. A new window opens as a column to the right of the focused one. Alt-Right and Alt-Left move focus one column and the strip scrolls to show it. Alt-End and Alt-Home jump to the last and first column."
+      caption="A new window opens beside the focused column at its own width. Alt-Right and Alt-Left step one column, Alt-End and Alt-Home jump to the ends." %}
   </div>
 </section>
 
@@ -42,8 +42,8 @@ permalink: /
           of view leave a sliver at the edge, so you can see what is there.
         </p>
         <dl class="keylist">
-          <div><dt><kbd>Cmd-Left</kbd> <kbd>Cmd-Right</kbd></dt><dd>Focus the column to the left or right</dd></div>
-          <div><dt><kbd>Cmd-Home</kbd> <kbd>Cmd-End</kbd></dt><dd>Focus the first or last column</dd></div>
+          <div><dt><kbd>Alt-Left</kbd> <kbd>Alt-Right</kbd></dt><dd>Focus the column to the left or right</dd></div>
+          <div><dt><kbd>Alt-Home</kbd> <kbd>Alt-End</kbd></dt><dd>Focus the first or last column</dd></div>
           <div><dt><kbd>Alt-J</kbd> <kbd>Alt-K</kbd></dt><dd>Focus down or up within a column</dd></div>
           <div><dt><kbd>Alt-Shift-H</kbd> <kbd>Alt-Shift-L</kbd></dt><dd>Move the column left or right</dd></div>
         </dl>
@@ -80,7 +80,7 @@ permalink: /
           closes or resizes, the one you are looking at stays in view.
         </p>
         <p>
-          Fast presses keep up. Each <kbd>Cmd-Right</kbd> steps one column, without waiting for macOS
+          Fast presses keep up. Each <kbd>Alt-Right</kbd> steps one column, without waiting for macOS
           to catch up with the last.
         </p>
       </div>
@@ -137,8 +137,8 @@ peek = 25                        <span class="c"># points left on screen</span><
         </thead>
         <tbody>
           <tr><td>Default layout</td><td>Dwindle tiles</td><td>Scrolling strip</td></tr>
-          <tr><td>Move between columns</td><td><kbd>Alt-H</kbd> <kbd>Alt-L</kbd></td><td><kbd>Cmd-Left</kbd> <kbd>Cmd-Right</kbd></td></tr>
-          <tr><td>Jump to the first or last column</td><td>No</td><td><kbd>Cmd-Home</kbd> <kbd>Cmd-End</kbd></td></tr>
+          <tr><td>Move between columns</td><td><kbd>Alt-H</kbd> <kbd>Alt-L</kbd></td><td><kbd>Alt-Left</kbd> <kbd>Alt-Right</kbd></td></tr>
+          <tr><td>Jump to the first or last column</td><td>No</td><td><kbd>Alt-Home</kbd> <kbd>Alt-End</kbd></td></tr>
           <tr><td>Preset column widths</td><td>No</td><td><kbd>Alt-R</kbd> cycles a list you set</td></tr>
           <tr><td>Set a column's width</td><td><kbd>Alt-Minus</kbd> <kbd>Alt-Equal</kbd>, 50 points a step</td><td>Any share, <code>column-width 0.75</code></td></tr>
           <tr><td>Maximize a column</td><td>Fullscreen, until focus moves</td><td>Holds until you toggle it back</td></tr>
@@ -169,8 +169,8 @@ peek = 25                        <span class="c"># points left on screen</span><
           <tr><th scope="col">Keys</th><th scope="col">Does</th></tr>
         </thead>
         <tbody>
-          <tr><td><kbd>Cmd-Left</kbd> <kbd>Cmd-Right</kbd></td><td>Focus the column to the left or right.</td></tr>
-          <tr><td><kbd>Cmd-Home</kbd> <kbd>Cmd-End</kbd></td><td>Focus the first or last column. <kbd>Cmd-Fn-Left</kbd> and <kbd>Cmd-Fn-Right</kbd> on a laptop.</td></tr>
+          <tr><td><kbd>Alt-Left</kbd> <kbd>Alt-Right</kbd></td><td>Focus the column to the left or right.</td></tr>
+          <tr><td><kbd>Alt-Home</kbd> <kbd>Alt-End</kbd></td><td>Focus the first or last column. <kbd>Alt-Fn-Left</kbd> and <kbd>Alt-Fn-Right</kbd> on a keyboard without Home and End.</td></tr>
           <tr><td><kbd>Alt-J</kbd> <kbd>Alt-K</kbd></td><td>Focus the window below or above in the same column.</td></tr>
           <tr><td><kbd>Alt-Shift-H</kbd> <kbd>Alt-Shift-L</kbd></td><td>Move the column left or right, or take a window out of a shared column.</td></tr>
           <tr><td><kbd>Alt-Shift-J</kbd> <kbd>Alt-Shift-K</kbd></td><td>Move the window down or up within its column.</td></tr>
@@ -190,10 +190,11 @@ peek = 25                        <span class="c"># points left on screen</span><
       </table>
     </div>
     <p class="section-note">
-      While Splay runs, <kbd>Cmd-Left</kbd> and <kbd>Cmd-Right</kbd> belong to it. In text fields
-      <kbd>Ctrl-A</kbd> and <kbd>Ctrl-E</kbd> still reach the ends of a line, and in browsers
-      <kbd>Cmd-[</kbd> and <kbd>Cmd-]</kbd> still go back and forward.
-      <a href="{{ '/start/#keys' | relative_url }}">Keys</a> in the manual shows how to hand a key back to an app.
+      While Splay runs, <kbd>Alt-Left</kbd> and <kbd>Alt-Right</kbd> belong to it, so they no longer move
+      the cursor by a word in text fields. In standard macOS text fields <kbd>Ctrl-Option-B</kbd> and
+      <kbd>Ctrl-Option-F</kbd> still do.
+      <a href="{{ '/start/#keys' | relative_url }}">Keys</a> in the manual shows how to hand a key back to an app,
+      or keep the right Option key for apps.
     </p>
   </div>
 </section>

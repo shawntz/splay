@@ -42,10 +42,10 @@ view, so it never shows on the other display.
 
 ### Moving along it
 
-`focus left` and `right`, on Cmd-Left and Cmd-Right, go from column to column,
+`focus left` and `right`, on Alt-Left and Alt-Right, go from column to column,
 landing on the window last focused in the column; `up` and `down`, on Alt-K
 and Alt-J, go within one. Focusing a column scrolls just far enough to show it
-whole. `focus-column first` and `last`, on Cmd-Home and Cmd-End, jump to the
+whole. `focus-column first` and `last`, on Alt-Home and Alt-End, jump to the
 ends.
 
 `move left` and `right` swap the column with its neighbour, or take a window
