@@ -48,20 +48,20 @@ public enum ConfigFile {
                 try write(data, to: file, flags: O_WRONLY | O_CREAT | O_EXCL, mode: mode)
             } catch {
                 try? files.removeItem(at: file)
-                throw Failure(description: "\(Brand.displayName) can't write in \(folder.path): \(error.reason). Nothing was written.")
+                throw Failure(description: "\(Brand.displayName) can't write in \(folder.path). \(error.says) Nothing was written.")
             }
             temporary = file
         }
         func giveUp(_ failure: Failure, removing copy: URL?) -> Failure {
-            if let temporary { try? files.removeItem(at: temporary) }
-            if let copy { try? files.removeItem(at: copy) }
+            if let temporary { remove(temporary) }
+            if let copy { remove(copy) }
             return failure
         }
         let kept: (copy: URL, isNew: Bool)
         do {
             kept = try keep(expected, beside: url, label: label, mode: mode)
         } catch {
-            throw giveUp(Failure(description: "\(Brand.displayName) can't keep a copy of \(name) in \(url.deletingLastPathComponent().path): \(error.reason). Nothing was written."), removing: nil)
+            throw giveUp(Failure(description: "\(Brand.displayName) can't keep a copy of \(name) in \(url.deletingLastPathComponent().path). \(error.says) Nothing was written."), removing: nil)
         }
         let newCopy = kept.isNew ? kept.copy : nil
         // Once more, now that the slow part is over: an editor may have saved while the files were written.
@@ -71,57 +71,86 @@ public enum ConfigFile {
             do {
                 try write(data, to: target, flags: O_WRONLY | O_TRUNC, mode: mode)
             } catch {
-                let restored = (try? write(expected, to: target, flags: O_WRONLY | O_TRUNC, mode: mode)) != nil
-                throw Failure(description: "Writing \(name) failed: \(error.reason). "
-                    + (restored ? "The file is as it was." : "The file as it was is \(kept.copy.lastPathComponent), in the same folder."))
+                // Whatever the failed write left, the old text goes back if it can.
+                if !isUnchanged() { try? write(expected, to: target, flags: O_WRONLY | O_TRUNC, mode: mode) }
+                guard isUnchanged() else {
+                    throw Failure(description: "\(Brand.displayName) could not write \(name). \(error.says) The file as it was is \(kept.copy.lastPathComponent), in the same folder.")
+                }
+                throw giveUp(Failure(description: "\(Brand.displayName) could not write \(name). \(error.says) The file is as it was."), removing: newCopy)
             }
             return kept.copy
         }
         // What the file carries besides its text, such as Finder tags. Without them the write still counts.
         copyfile(target.path, temporary.path, nil, copyfile_flags_t(COPYFILE_XATTR | COPYFILE_ACL))
         guard rename(temporary.path, target.path) == 0 else {
-            let reason = String(cString: strerror(errno))
-            throw giveUp(Failure(description: "\(Brand.displayName) can't replace \(name): \(reason). Nothing was written."), removing: newCopy)
+            let failure = WriteError()
+            throw giveUp(Failure(description: "\(Brand.displayName) can't replace \(name). \(failure.says) Nothing was written."), removing: newCopy)
         }
         sync(folder)
         return kept.copy
     }
 
-    /// A system call that failed, with the system's words for why.
-    private struct WriteError: Error {
-        let reason: String
+    /// The name `replace` would keep the old file under, as things stand: `<name>.before-<label>`, or with `-2`,
+    /// `-3` and so on when that name holds something else.
+    public static func copyName(for url: URL, holding data: Data, label: String) -> String {
+        freeCopy(beside: url, holding: data, label: label)?.copy.lastPathComponent ?? "\(url.lastPathComponent).before-\(label)"
+    }
 
-        /// For a call that has just failed and set `errno`.
+    /// Why a step failed, as a sentence.
+    private struct WriteError: Error {
+        let says: String
+
+        /// For a system call that has just failed and set `errno`. The words are the system's, so they are
+        /// quoted as its own.
         init() {
-            reason = String(cString: strerror(errno))
+            says = "macOS says \"\(String(cString: strerror(errno)))\"."
         }
 
-        init(reason: String) {
-            self.reason = reason
+        init(says: String) {
+            self.says = says
         }
     }
 
-    /// Keeps `data` in a file beside `url` that did not exist before, or finds the copy already there. A name in
-    /// use by other content gets `-2`, `-3` and so on, so no copy is ever written over.
-    private static func keep(_ data: Data, beside url: URL, label: String, mode: UInt16) throws(WriteError) -> (copy: URL, isNew: Bool) {
+    /// Removes a file this call made. An access list copied onto it from the config may forbid deleting it, so
+    /// that list goes first.
+    private static func remove(_ file: URL) {
+        if let empty = acl_init(0) {
+            acl_set_file(file.path, ACL_TYPE_EXTENDED, empty)
+            acl_free(UnsafeMutableRawPointer(empty))
+        }
+        try? FileManager.default.removeItem(at: file)
+    }
+
+    /// Where a copy holding `data` goes beside `url`: the first of `<name>.before-<label>`, `…-2`, `…-3` and so on
+    /// that is free, or that already holds exactly `data`. Nil when 99 of them hold something else.
+    private static func freeCopy(beside url: URL, holding data: Data, label: String) -> (copy: URL, exists: Bool)? {
         let name = "\(url.lastPathComponent).before-\(label)"
         for attempt in 1...99 {
             let copy = url.deletingLastPathComponent().appending(path: attempt == 1 ? name : "\(name)-\(attempt)")
             if let there = FileManager.default.contents(atPath: copy.path) {
-                if there == data { return (copy, false) }
+                if there == data { return (copy, true) }
                 continue
             }
             // Something that is there and can't be read, such as a folder or a dangling link, is not written to.
-            guard (try? FileManager.default.attributesOfItem(atPath: copy.path)) == nil else { continue }
-            do {
-                try write(data, to: copy, flags: O_WRONLY | O_CREAT | O_EXCL, mode: mode)
-            } catch {
-                try? FileManager.default.removeItem(at: copy)
-                throw error
-            }
-            return (copy, true)
+            if (try? FileManager.default.attributesOfItem(atPath: copy.path)) == nil { return (copy, false) }
         }
-        throw WriteError(reason: "there are too many copies named \(name)")
+        return nil
+    }
+
+    /// Keeps `data` in a file beside `url` that did not exist before, or finds the copy already there, so no
+    /// copy is ever written over.
+    private static func keep(_ data: Data, beside url: URL, label: String, mode: UInt16) throws(WriteError) -> (copy: URL, isNew: Bool) {
+        guard let place = freeCopy(beside: url, holding: data, label: label) else {
+            throw WriteError(says: "The folder has too many files named \(url.lastPathComponent).before-\(label).")
+        }
+        guard !place.exists else { return (place.copy, false) }
+        do {
+            try write(data, to: place.copy, flags: O_WRONLY | O_CREAT | O_EXCL, mode: mode)
+        } catch {
+            try? FileManager.default.removeItem(at: place.copy)
+            throw error
+        }
+        return (place.copy, true)
     }
 
     /// Writes `data` and waits until it is on the disk.

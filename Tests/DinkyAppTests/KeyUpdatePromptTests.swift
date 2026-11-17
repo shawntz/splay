@@ -1,7 +1,7 @@
 import AppKit
-import DinkyConfig
 import Foundation
 import Testing
+@testable import DinkyConfig
 @testable import dinky
 
 /// The ask about keys an older default wrote: what it says, what it remembers and what it writes. No window is
@@ -74,6 +74,7 @@ struct KeyUpdatePromptTests {
         #expect(texts.first == "Some of Splay's keys have moved")
         #expect(texts.contains("Your config still has the keys an earlier version came with."))
         #expect(texts.contains("Use the New Keys changes these keys in splay.toml. The file as it is now stays in the same folder, as splay.toml.before-0.6."))
+        #expect(texts.contains("Apps no longer get the new keys while Splay runs. Chrome and Firefox switch tabs with ⌥⌘← and ⌥⌘→, and iTerm2 and Ghostty move between panes with them. To leave a key to an app, add exclude-apps to its line in splay.toml."))
         #expect(texts.contains("⌥H and ⌥L will no longer type characters in apps. To keep typing with them, delete the alt-h and alt-l lines from splay.toml afterwards."))
         #expect(Array(texts.suffix(3)) == ["Use the New Keys", "Keep My Keys", "What Changed"])
         for row in ["focus left", "⌥⌘← and ⌥H", "was ⌥←"] { #expect(texts.contains(row), "\(row)") }
@@ -92,7 +93,7 @@ struct KeyUpdatePromptTests {
             of: "alt-left = 'focus left'", with: "alt-left = { command = 'focus left', exclude-apps = ['com.google.Chrome'] }")
         let (check, update) = try update(text)
         let texts = labels(in: prompt.content(for: check, update, asked: false))
-        #expect(texts.contains("splay.toml has its own line for alt-left, so Splay changed nothing. To move the keys, edit the file."))
+        #expect(texts.contains("splay.toml lists exclude-apps for alt-left, so Splay changed nothing. To move the keys, edit the file."))
         #expect(Array(texts.suffix(2)) == ["OK", "What Changed"])
         #expect(!texts.contains("Use the New Keys"))
     }
@@ -103,22 +104,34 @@ struct KeyUpdatePromptTests {
             KeyUpdateText.closing(try update(text).0, file: file, copy: copy)
         }
         let taken = try shipped("0.4").replacingOccurrences(of: "[mode.main]\n", with: "[mode.main]\nalt-cmd-left = 'workspace prev'\n")
-        #expect(try closing(taken) == ["splay.toml already uses alt-cmd-left, so Splay changed nothing. To move the keys, edit the file."])
+        #expect(try closing(taken) == ["splay.toml already binds alt-cmd-left, so Splay changed nothing. To move the keys, edit the file."])
         let both = taken.replacingOccurrences(of: "alt-right = 'focus right'", with: "alt-right = { command = 'focus right', exclude-apps = ['a.b'] }")
             .replacingOccurrences(of: "alt-end = 'focus-column last'", with: "alt-end = { command = 'focus-column last', exclude-apps = ['a.b'] }")
-        #expect(try closing(both) == ["splay.toml has its own lines for alt-right and alt-end and already uses alt-cmd-left, so Splay changed nothing. To move the keys, edit the file."])
+        #expect(try closing(both) == ["splay.toml lists exclude-apps for alt-right and alt-end and already binds alt-cmd-left, so Splay changed nothing. To move the keys, edit the file."])
         let dotted = "# Alt-Left and Alt-Right walk the strip, so apps no longer get them. Text fields use them to move by a word.\nmode.main.alt-left = 'focus left'\n"
-        #expect(try closing(dotted) == ["splay.toml writes these keys in a way Splay can't edit, so Splay changed nothing. To move the keys, edit the file."])
+        #expect(try closing(dotted) == ["splay.toml binds these keys in a form that can't be edited for you, so Splay changed nothing. To move the keys, edit the file."])
     }
 
     /// Option-Command with an arrow types nothing, so only the letter keys are named. One key reads in the singular.
-    @Test func `The offer says which new keys stop typing characters, and says nothing when none do`() throws {
+    @Test func `The offer says what the new keys take from apps, and which of them stop typing characters`() throws {
         let file = "splay.toml", copy = "splay.toml.before-0.6"
-        let withoutL = try shipped("0.4").replacingOccurrences(of: "alt-right = 'focus right'\n", with: "")
-        #expect(KeyUpdateText.closing(try update(withoutL).0, file: file, copy: copy).last
-            == "⌥H will no longer type a character in apps. To keep typing with it, delete the alt-h line from splay.toml afterwards.")
+        let apps = "Apps no longer get the new keys while Splay runs."
+        let leave = "To leave a key to an app, add exclude-apps to its line in splay.toml."
+        // Alt-H and Alt-L are in the file already, so only the arrows arrive, and those type nothing.
         let hasBoth = try shipped("0.4").replacingOccurrences(of: "[mode.main]\n", with: "[mode.main]\nalt-h = 'focus left'\nalt-l = 'focus right'\n")
-        #expect(KeyUpdateText.closing(try update(hasBoth).0, file: file, copy: copy).count == 1)
+        #expect(KeyUpdateText.closing(try update(hasBoth).0, file: file, copy: copy).dropFirst()
+            == ["\(apps) Chrome and Firefox switch tabs with ⌥⌘← and ⌥⌘→, and iTerm2 and Ghostty move between panes with them. \(leave)"])
+        // Only Home and End move: no app is known to use those, and nothing new types a character.
+        let endsOnly = try shipped("0.4").replacingOccurrences(of: "alt-left = 'focus left'\n", with: "").replacingOccurrences(of: "alt-right = 'focus right'\n", with: "")
+        #expect(KeyUpdateText.closing(try update(endsOnly).0, file: file, copy: copy).dropFirst() == ["\(apps) \(leave)"])
+        // One key that types, and one arrow, read in the singular.
+        let one = KeyUpdate(id: "x", parts: ["x"], moves: [
+            KeyMove(mode: "main", command: "focus left", now: [try KeyCombo("alt-cmd-left"), try KeyCombo("alt-h")], was: [try KeyCombo("alt-left")]),
+        ], own: [], taken: [])
+        #expect(KeyUpdateText.closing(.offer(one, text: ""), file: file, copy: copy).dropFirst() == [
+            "\(apps) Chrome and Firefox switch tabs with ⌥⌘←, and iTerm2 and Ghostty move between panes with them. \(leave)",
+            "⌥H will no longer type a character in apps. To keep typing with it, delete the alt-h line from splay.toml afterwards.",
+        ])
         #expect(try KeyCombo("alt-shift-semicolon").typesWithOption)
         for combo in ["alt-left", "alt-cmd-h", "ctrl-alt-l", "alt-home", "alt-f5", "h"] {
             #expect(try !KeyCombo(combo).typesWithOption, "\(combo)")
@@ -296,6 +309,49 @@ struct KeyUpdatePromptTests {
         #expect(main[try KeyCombo("alt-cmd-home")] == nil)
     }
 
+    /// The file is saved with exclude-apps on one of the keys while the window is open. Use the New Keys then
+    /// says why nothing can be changed, and writes nothing.
+    @Test func `A file that can no longer be changed says so when Use the New Keys is pressed`() throws {
+        let dir = try directory()
+        let defaults = Memory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let url = dir.appending(path: "splay.toml")
+        try shipped("0.4").write(to: url, atomically: true, encoding: .utf8)
+        let screen = Screen()
+        let prompt = KeyUpdatePrompt(url: url, store: defaults, version: "0.6") { screen.shown.append($0) }
+        prompt.askIfNew()
+        let own = try shipped("0.4").replacingOccurrences(
+            of: "alt-left = 'focus left'", with: "alt-left = { command = 'focus left', exclude-apps = ['com.google.Chrome'] }")
+        try own.write(to: url, atomically: true, encoding: .utf8)
+        try press("Use the New Keys", on: screen)
+        #expect(screen.shown.count == 2)
+        let texts = labels(in: try #require(screen.shown.last))
+        #expect(texts.contains("splay.toml lists exclude-apps for alt-left, so Splay changed nothing. To move the keys, edit the file."))
+        #expect(!texts.contains("Use the New Keys"))
+        #expect(try String(contentsOf: url, encoding: .utf8) == own)
+        #expect(try FileManager.default.contentsOfDirectory(atPath: dir.path) == ["splay.toml"])
+        // It has been told now, so the next launch says nothing.
+        KeyUpdatePrompt(url: url, store: defaults, version: "0.6") { screen.shown.append($0) }.askIfNew()
+        #expect(screen.shown.count == 2)
+    }
+
+    /// The window names the copy that will really be made, which has a number when the plain name is in use.
+    @Test func `The window names the copy the old file will get`() throws {
+        let dir = try directory()
+        let defaults = Memory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let url = dir.appending(path: "splay.toml")
+        try shipped("0.4").write(to: url, atomically: true, encoding: .utf8)
+        try "an older file of mine\n".write(to: dir.appending(path: "splay.toml.before-0.6"), atomically: true, encoding: .utf8)
+        let screen = Screen()
+        let prompt = KeyUpdatePrompt(url: url, store: defaults, version: "0.6") { screen.shown.append($0) }
+        prompt.askIfNew()
+        #expect(labels(in: try #require(screen.shown.last)).contains { $0.hasSuffix("stays in the same folder, as splay.toml.before-0.6-2.") })
+        try press("Use the New Keys", on: screen)
+        #expect(try String(contentsOf: dir.appending(path: "splay.toml.before-0.6-2"), encoding: .utf8) == (try shipped("0.4")))
+        #expect(try String(contentsOf: dir.appending(path: "splay.toml.before-0.6"), encoding: .utf8) == "an older file of mine\n")
+    }
+
     @Test func `A config Splay cannot change is told so once`() throws {
         let dir = try directory()
         let defaults = Memory()
@@ -346,7 +402,7 @@ struct KeyUpdatePromptTests {
         #expect(screen.shown.count == 2)
         let failure = labels(in: try #require(screen.shown.last))
         #expect(failure.first == "Splay could not change splay.toml")
-        #expect(failure.contains { $0.hasPrefix("Splay can't write in ") && $0.hasSuffix(": Permission denied. Nothing was written.") })
+        #expect(failure.contains { $0.hasPrefix("Splay can't write in ") && $0.hasSuffix(". macOS says \"Permission denied\". Nothing was written.") })
         #expect(try String(contentsOf: url, encoding: .utf8) == (try shipped("0.4")))
     }
 
@@ -370,24 +426,46 @@ struct KeyUpdatePromptTests {
         let defaults = Memory()
         let answers = KeyUpdateAnswers(store: defaults)
         let fromFour = try update(try shipped("0.4")).1, fromTwo = try update(try shipped("0.2")).1
-        #expect(!answers.has(fromFour.id))
-        answers.add(fromFour.id)
-        answers.add(fromFour.id)
-        #expect(answers.has(fromFour.id))
-        #expect(!answers.has(fromTwo.id))
-        #expect(defaults.stringArray(forKey: KeyUpdateAnswers.key) == [fromFour.id])
+        #expect(!answers.cover(fromFour))
+        answers.add(fromFour)
+        answers.add(fromFour)
+        #expect(answers.cover(fromFour))
+        #expect(!answers.cover(fromTwo))
+        #expect(defaults.stringArray(forKey: KeyUpdateAnswers.key) == fromFour.parts)
+        #expect(fromFour.parts.count == 4)
+    }
+
+    /// The answer was for each of the four keys. With one of them gone from the file, the other three are
+    /// still answered for.
+    @Test func `Keys kept are not asked about again when one of them is removed later`() throws {
+        let dir = try directory()
+        let defaults = Memory()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let url = dir.appending(path: "splay.toml")
+        try shipped("0.4").write(to: url, atomically: true, encoding: .utf8)
+        let screen = Screen()
+        let prompt = KeyUpdatePrompt(url: url, store: defaults, version: "0.6") { screen.shown.append($0) }
+        prompt.askIfNew()
+        try press("Keep My Keys", on: screen)
+        // Later: an unrelated setting changes, and one of the kept keys goes.
+        let edited = try shipped("0.4").replacingOccurrences(of: "workspaces = 5 ", with: "workspaces = 3 ")
+            .replacingOccurrences(of: "alt-end = 'focus-column last'\n", with: "")
+        try edited.write(to: url, atomically: true, encoding: .utf8)
+        prompt.askIfNew()
+        #expect(screen.shown.count == 1)
+        #expect(prompt.menuItem() != nil)
     }
 
     @Test func `Doctor names the older keys and where to move them`() throws {
         let old = Config.keyUpdate(for: try shipped("0.4"))
         #expect(KeyUpdateText.doctorNote(old, file: "splay.toml", inMenu: true)
-            == "splay.toml has keys from an older default: alt-left, alt-right, alt-home, alt-end. Use Splay's New Keys in the app's menu moves them.")
+            == "splay.toml has keys from an older default: alt-left, alt-right, alt-home, alt-end. To move them, choose Use Splay's New Keys in Splay's menu.")
         // A file the app does not read has no menu item to point to.
         #expect(KeyUpdateText.doctorNote(old, file: "other.toml", inMenu: false)
             == "other.toml has keys from an older default: alt-left, alt-right, alt-home, alt-end.")
         let own = try shipped("0.4").replacingOccurrences(of: "alt-left = 'focus left'", with: "alt-left = { command = 'focus left', exclude-apps = ['a.b'] }")
         #expect(KeyUpdateText.doctorNote(Config.keyUpdate(for: own), file: "splay.toml", inMenu: true)
-            == "splay.toml has keys from an older default: alt-left, alt-right, alt-home, alt-end. The app does not move them, because splay.toml has its own line for alt-left.")
+            == "splay.toml has keys from an older default: alt-left, alt-right, alt-home, alt-end. The app does not move them, because splay.toml lists exclude-apps for alt-left.")
         #expect(KeyUpdateText.doctorNote(Config.keyUpdate(for: Config.defaultTOML), file: "splay.toml", inMenu: true) == nil)
         #expect(KeyUpdateText.doctorNote(Config.keyUpdate(for: "not toml"), file: "splay.toml", inMenu: true) == nil)
     }
